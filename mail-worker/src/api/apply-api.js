@@ -41,6 +41,6 @@ app.get('/apply/batchStatus', async (c) => {
 
 app.get('/apply/zhipuModels', async (c) => {
 	const settingRow = await applyService.getSettingRow(c);
-	const data = await aiService.listZhipuModels(c, { key: settingRow.zhipuApiKey });
+	const data = await aiService.listZhipuModels(c, { key: settingRow.zhipuApiKey, baseUrl: settingRow.zhipuBaseUrl });
 	return c.json(result.ok(data || []));
 });

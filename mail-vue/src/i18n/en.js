@@ -401,6 +401,8 @@ const en = {
     zhipuModelLabel: 'Zhipu Model',
     zhipuModelDesc: 'Model used by the Zhipu fallback channel. Focus the select to fetch available models with your key, or type any model ID manually.',
     zhipuModelPlaceholder: 'glm-4.7-flash',
+    zhipuBaseUrlLabel: 'Zhipu Endpoint',
+    zhipuBaseUrlDesc: 'Defaults to the standard open platform endpoint. GLM Coding Plan subscribers should set https://open.bigmodel.cn/api/coding/paas/v4 to use their subscription quota.',
     batchReview: 'AI Batch Review',
     batchReviewConfirm: 'Batch-review pending applications: invite codes and trust-threshold applicants are approved directly, the rest are judged by AI (via the Zhipu fallback). Keep this page open while it runs.',
     batchRunningMsg: 'Batch review running: processed {processed} · approved {approved} · rejected {rejected} · manual {kept} · remaining {remaining}',

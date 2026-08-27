@@ -153,7 +153,7 @@ const applyService = {
 				username: oauthRow.username,
 				trustLevel: oauthRow.trustLevel,
 				reason: reasonText
-			}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
+			}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel, baseUrl: settingRow.zhipuBaseUrl });
 
 			// 前缀审核不通过：任何人（含免审通道）直接驳回
 			if (verdict && !verdict.prefixOk) {
@@ -322,7 +322,7 @@ const applyService = {
 					username: row.username,
 					trustLevel: row.trustLevel,
 					reason: row.reason
-				}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
+				}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel, baseUrl: settingRow.zhipuBaseUrl });
 
 				if (verdict && !verdict.prefixOk) {
 					await this.rejectByAi(c, row, verdict.reason);

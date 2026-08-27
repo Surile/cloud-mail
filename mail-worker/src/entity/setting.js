@@ -67,6 +67,7 @@ export const setting = sqliteTable('setting', {
 	applyAutoTrustLevel: integer('apply_auto_trust_level').default(3).notNull(),
 	applyAiReview: integer('apply_ai_review').default(0).notNull(),
 	zhipuApiKey: text('zhipu_api_key').default('').notNull(),
-	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull()
+	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull(),
+	zhipuBaseUrl: text('zhipu_base_url').default('https://open.bigmodel.cn/api/paas/v4').notNull()
 });
 export default setting
