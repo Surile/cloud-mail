@@ -66,6 +66,7 @@ export const setting = sqliteTable('setting', {
 	autoCleanExclude: text('auto_clean_exclude').default('').notNull(),
 	applyAutoTrustLevel: integer('apply_auto_trust_level').default(3).notNull(),
 	applyAiReview: integer('apply_ai_review').default(0).notNull(),
-	zhipuApiKey: text('zhipu_api_key').default('').notNull()
+	zhipuApiKey: text('zhipu_api_key').default('').notNull(),
+	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull()
 });
 export default setting

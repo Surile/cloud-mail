@@ -20,3 +20,11 @@ export function applyApprove(applyId) {
 export function applyReject(applyId, remark) {
     return http.put('/apply/reject', {applyId, remark})
 }
+
+export function applyBatchReview() {
+    return http.post('/apply/batchReview')
+}
+
+export function zhipuModels() {
+    return http.get('/apply/zhipuModels')
+}

@@ -101,8 +101,8 @@ const aiService = {
 		}
 	},
 
-	// 统一入口：优先 Workers AI，不可用时回落智谱 glm-4.7-flash 免费模型（需在系统设置配置 zhipuApiKey）；全部不可用返回 null（调用方回落人工队列）
-	async reviewApplication(c, application, zhipuApiKey) {
+	// 统一入口：优先 Workers AI，不可用时回落智谱免费模型（需在系统设置配置 zhipuApiKey，模型 zhipuModel 可配）；全部不可用返回 null（调用方回落人工队列）
+	async reviewApplication(c, application, zhipu) {
 
 		const verdict = await this.runWorkersAi(c, application);
 
@@ -110,7 +110,7 @@ const aiService = {
 			return verdict;
 		}
 
-		const key = String(zhipuApiKey || '').trim();
+		const key = String((zhipu && zhipu.key) || '').trim();
 
 		if (!key) {
 			return null;
@@ -124,7 +124,7 @@ const aiService = {
 					'Authorization': 'Bearer ' + key
 				},
 				body: JSON.stringify({
-					model: 'glm-4.7-flash',
+					model: (zhipu && zhipu.model) || 'glm-4.7-flash',
 					messages: this.reviewMessages(application),
 					temperature: 0,
 					max_tokens: 220,
@@ -182,6 +182,35 @@ const aiService = {
 			};
 		} catch (e) {
 			return null;
+		}
+	},
+
+	// 拉取智谱可用模型列表（管理端下拉用）；无 Key 或失败返回空数组
+	async listZhipuModels(c, zhipu) {
+		const key = String((zhipu && zhipu.key) || '').trim();
+
+		if (!key) {
+			return [];
+		}
+
+		try {
+			const res = await fetch('https://open.bigmodel.cn/api/paas/v4/models', {
+				headers: {
+					'Authorization': 'Bearer ' + key
+				}
+			});
+
+			if (!res.ok) {
+				console.error('获取智谱模型列表失败 status: ' + res.status);
+				return [];
+			}
+
+			const data = await res.json();
+
+			return (data?.data || []).map(m => ({ id: m.id || m.model || '', owned_by: m.owned_by || '' })).filter(m => m.id);
+		} catch (e) {
+			console.error('获取智谱模型列表失败: ', e.message);
+			return [];
 		}
 	}
 };

@@ -12,6 +12,10 @@
       </div>
       <Icon class="icon" icon="iconoir:search" width="20" height="20" @click="search"/>
       <Icon class="icon" icon="ion:reload" width="18" height="18" @click="refresh"/>
+      <el-tooltip effect="dark" :content="$t('batchReview')" placement="top">
+        <Icon class="icon" :class="batchRunning ? 'running' : ''" icon="fluent:bot-24-regular" width="20" height="20"
+              @click="batchReview"/>
+      </el-tooltip>
     </div>
 
     <el-scrollbar class="scrollbar">
@@ -95,7 +99,7 @@ import {computed, defineOptions, onMounted, reactive, ref} from "vue";
 import {Icon} from "@iconify/vue";
 import loading from "@/components/loading/index.vue";
 import {useSettingStore} from "@/store/setting.js";
-import {applyApprove, applyList, applyReject} from "@/request/apply.js";
+import {applyApprove, applyBatchReview, applyList, applyReject} from "@/request/apply.js";
 import dayjs from "dayjs";
 import {useI18n} from "vue-i18n";
 
@@ -125,6 +129,7 @@ const rejectShow = ref(false)
 const rejectRemark = ref('')
 const currentRow = ref(null)
 const auditLoading = ref(false)
+const batchRunning = ref(false)
 
 function trustTagType(level) {
   if (level >= 3) return 'success'
@@ -209,6 +214,39 @@ async function submitReject() {
     getList()
   } finally {
     auditLoading.value = false
+  }
+}
+
+async function batchReview() {
+
+  if (batchRunning.value) return
+
+  try {
+    await ElMessageBox.confirm(t('batchReviewConfirm'), t('applyAudit'), {
+      confirmButtonText: t('confirm'),
+      cancelButtonText: t('cancel'),
+      type: 'warning'
+    })
+  } catch (e) {
+    return
+  }
+
+  batchRunning.value = true
+
+  try {
+    let remaining = -1
+    let rounds = 0
+
+    do {
+      const data = await applyBatchReview()
+      remaining = data.remaining
+      rounds++
+    } while (remaining > 0 && rounds < 200)
+
+    ElMessage({message: t('batchDone'), type: 'success', plain: true})
+    getList()
+  } finally {
+    batchRunning.value = false
   }
 }
 

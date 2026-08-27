@@ -396,7 +396,14 @@ const en = {
     zhipuKeyLabel: 'Zhipu Key (AI Fallback)',
     zhipuKeyDesc: 'Fallback AI channel: when Workers AI is unavailable, review switches to the free Zhipu glm-4.7-flash model. Create a key on open.bigmodel.cn and paste it here; leave empty to disable.',
     notSet: 'Not set',
-    emptyZhipuKey: 'Please enter the key'
+    emptyZhipuKey: 'Please enter the key',
+    zhipuModelLabel: 'Zhipu Model',
+    zhipuModelDesc: 'Model used by the Zhipu fallback channel. Focus the select to fetch available models with your key, or type any model ID manually.',
+    zhipuModelPlaceholder: 'glm-4.7-flash',
+    batchReview: 'AI Batch Review',
+    batchReviewConfirm: 'Batch-review pending applications: invite codes and trust-threshold applicants are approved directly, the rest are judged by AI (via the Zhipu fallback). Keep this page open while it runs.',
+    batchProgress: 'Reviewing, {remaining} pending left',
+    batchDone: 'Batch review finished'
 }
 
 export default en

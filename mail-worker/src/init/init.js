@@ -37,8 +37,19 @@ const dbInit = {
 		await this.v3_6DB(c);
 		await this.v3_7DB(c);
 		await this.v3_8DB(c);
+		await this.v3_9DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_9DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_model TEXT NOT NULL DEFAULT 'glm-4.7-flash';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	// 给存量用户一次性补发低调别名（u<随机六位>@主邮箱后缀）；已有别名的用户自动跳过，可安全重跑

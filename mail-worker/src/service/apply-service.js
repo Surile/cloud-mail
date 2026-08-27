@@ -152,7 +152,7 @@ const applyService = {
 				username: oauthRow.username,
 				trustLevel: oauthRow.trustLevel,
 				reason: reasonText
-			}, settingRow.zhipuApiKey);
+			}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
 
 			// 前缀审核不通过：任何人（含免审通道）直接驳回
 			if (verdict && !verdict.prefixOk) {
@@ -189,14 +189,74 @@ const applyService = {
 			const aliasEmail = await this.doApprove(c, applyRow, 0);
 			await this.notify(c, applyRow, mode, aliasEmail);
 		} catch (e) {
+			// 身份已绑定邮箱（重复单/审批期间已自行登录绑定）：申请作废，避免永久卡在待审队列
+			const voided = e.message === t('oauthBound');
 			applyRow.remark = (e.message || 'unknown').slice(0, 200);
 			await orm(c).update(apply).set({
-				status: applyConst.status.PENDING,
+				status: voided ? applyConst.status.REJECTED : applyConst.status.PENDING,
 				remark: applyRow.remark,
 				updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 			}).where(eq(apply.applyId, applyRow.applyId)).run();
 			await this.notify(c, applyRow, 'fallback');
 		}
+	},
+
+	// 批量补审：每次处理一批待审单——注册码/达到信任阈值的按免审政策直接开通，其余（AI 开启时）交 AI 判定；返回剩余待审数
+	async batchReview(c) {
+
+		const settingRow = await this.getSettingRow(c);
+		const threshold = settingRow.applyAutoTrustLevel == null ? 3 : (Number(settingRow.applyAutoTrustLevel) || 0);
+		const useAi = Number(settingRow.applyAiReview) === 1;
+		const batchSize = 20;
+
+		const rows = await orm(c).select().from(apply)
+			.where(eq(apply.status, applyConst.status.PENDING))
+			.orderBy(
+				sql`CASE WHEN ${apply.trustLevel} IS NULL THEN -1 ELSE ${apply.trustLevel} END DESC`,
+				desc(apply.applyId)
+			)
+			.limit(batchSize)
+			.all();
+
+		for (const row of rows) {
+
+			const fast = (row.regCode && row.regCode.trim()) ||
+				(threshold > 0 && Number(row.trustLevel === null ? -1 : row.trustLevel) >= threshold);
+
+			if (fast) {
+				await this.approveWithFallback(c, row, 'auto');
+				continue;
+			}
+
+			if (!useAi) {
+				continue;
+			}
+
+			const verdict = await aiService.reviewApplication(c, {
+				fastLane: false,
+				prefix: emailUtils.getName(row.email),
+				platform: row.platform,
+				username: row.username,
+				trustLevel: row.trustLevel,
+				reason: row.reason
+			}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
+
+			if (!verdict || verdict.decision === 'review') {
+				continue;
+			}
+
+			if (!verdict.prefixOk || verdict.decision === 'reject') {
+				await this.rejectByAi(c, row, verdict.reason);
+				continue;
+			}
+
+			await this.approveWithFallback(c, row, 'ai-approved');
+		}
+
+		const totalRow = await orm(c).select({ total: count() }).from(apply)
+			.where(eq(apply.status, applyConst.status.PENDING)).get();
+
+		return { processed: rows.length, remaining: totalRow.total };
 	},
 
 	async rejectByAi(c, applyRow, reason) {

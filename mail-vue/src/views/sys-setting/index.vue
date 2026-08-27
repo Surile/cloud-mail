@@ -473,6 +473,21 @@
                 </el-button>
               </div>
             </div>
+            <div class="setting-item">
+              <div>
+                <span>{{ $t('zhipuModelLabel') }}</span>
+                <el-tooltip effect="dark" :content="$t('zhipuModelDesc')">
+                  <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                </el-tooltip>
+              </div>
+              <div>
+                <el-select v-model="setting.zhipuModel" filterable allow-create default-first-option
+                           :placeholder="$t('zhipuModelPlaceholder')" :loading="zhipuModelsLoading"
+                           style="width: 200px" @focus="loadZhipuModels" @change="saveZhipuModel">
+                  <el-option v-for="m in zhipuModelOptions" :key="m.id" :label="m.id" :value="m.id"/>
+                </el-select>
+              </div>
+            </div>
           </div>
 
           <div class="settings-card about">
@@ -933,6 +948,7 @@
 <script setup>
 import {computed, defineOptions, nextTick, reactive, ref} from "vue";
 import {deleteBackground, setBackground, setBlackList, settingQuery, settingSet} from "@/request/setting.js";
+import {zhipuModels} from "@/request/apply.js";
 import {useSettingStore} from "@/store/setting.js";
 import {useUiStore} from "@/store/ui.js";
 import {useUserStore} from "@/store/user.js";
@@ -1429,6 +1445,28 @@ function saveAiCodeFilter() {
 function openZhipuEdit() {
   zhipuKeyInput.value = ''
   zhipuEditShow.value = true
+}
+
+const zhipuModelOptions = ref([])
+const zhipuModelsLoading = ref(false)
+let zhipuModelsLoaded = false
+
+async function loadZhipuModels() {
+
+  if (zhipuModelsLoading.value) return
+
+  zhipuModelsLoading.value = true
+
+  try {
+    zhipuModelOptions.value = await zhipuModels()
+    zhipuModelsLoaded = true
+  } finally {
+    zhipuModelsLoading.value = false
+  }
+}
+
+function saveZhipuModel() {
+  editSetting({zhipuModel: (setting.zhipuModel || '').trim() || 'glm-4.7-flash'})
 }
 
 function saveZhipuKey() {
