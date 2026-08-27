@@ -365,6 +365,7 @@ const en = {
     applySubmitted: 'Application submitted',
     applyPending: 'Under Review',
     applyPendingTip: 'Reviews are usually done within 24 hours. This page refreshes automatically; you can come back later too.',
+    applyQueue: 'Queue position: {queue} of {total} pending (higher trust levels first, FIFO within a level)',
     applyApproved: 'Application Approved',
     applyApprovedTip: 'Your mailbox is ready. Go back to the login page and sign in again to enter.',
     applyRejected: 'Application Rejected',

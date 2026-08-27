@@ -46,6 +46,7 @@
           <template #sub-title>
             <div class="result-sub">
               <div>{{ record.email }}</div>
+              <div class="queue" v-if="record.queue">{{ $t('applyQueue', {queue: record.queue, total: record.total}) }}</div>
               <div class="tip">{{ $t('applyPendingTip') }}</div>
             </div>
           </template>
@@ -356,6 +357,11 @@ onUnmounted(stopPoll)
     flex-direction: column;
     gap: 8px;
     word-break: break-all;
+
+    .queue {
+      font-weight: 600;
+      color: var(--el-color-primary);
+    }
 
     .tip {
       color: var(--el-text-color-secondary);
