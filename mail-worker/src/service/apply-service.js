@@ -15,7 +15,7 @@ import regKeyService from './reg-key-service';
 import aiService from './ai-service';
 import saltHashUtils from '../utils/crypto-utils';
 import { applyConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, count, like, or, sql } from 'drizzle-orm';
+import { and, asc, desc, eq, count, like, or, sql } from 'drizzle-orm';
 import dayjs from 'dayjs';
 
 const REASON_MIN_LENGTH = 10;
@@ -184,10 +184,12 @@ const applyService = {
 		await this.notify(c, applyRow, 'pending');
 	},
 
-	async approveWithFallback(c, applyRow, mode) {
+	async approveWithFallback(c, applyRow, mode, aliasEmail, silent) {
 		try {
-			const aliasEmail = await this.doApprove(c, applyRow, 0);
-			await this.notify(c, applyRow, mode, aliasEmail);
+			const alias = await this.doApprove(c, applyRow, 0);
+			if (!silent) {
+				await this.notify(c, applyRow, mode, aliasEmail ?? alias);
+			}
 		} catch (e) {
 			// 身份已绑定邮箱（重复单/审批期间已自行登录绑定）：申请作废，避免永久卡在待审队列
 			const voided = e.message === t('oauthBound');
@@ -197,7 +199,9 @@ const applyService = {
 				remark: applyRow.remark,
 				updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 			}).where(eq(apply.applyId, applyRow.applyId)).run();
-			await this.notify(c, applyRow, 'fallback');
+			if (!silent) {
+				await this.notify(c, applyRow, 'fallback');
+			}
 		}
 	},
 
@@ -213,7 +217,7 @@ const applyService = {
 			.where(eq(apply.status, applyConst.status.PENDING))
 			.orderBy(
 				sql`CASE WHEN ${apply.trustLevel} IS NULL THEN -1 ELSE ${apply.trustLevel} END DESC`,
-				desc(apply.applyId)
+				asc(apply.applyId)
 			)
 			.limit(batchSize)
 			.all();
@@ -223,34 +227,44 @@ const applyService = {
 			const fast = (row.regCode && row.regCode.trim()) ||
 				(threshold > 0 && Number(row.trustLevel === null ? -1 : row.trustLevel) >= threshold);
 
+			// 与提交流程一致：AI 开启时免审通道同样要先过前缀人格化关，不过关直接驳回
+			if (useAi) {
+
+				const verdict = await aiService.reviewApplication(c, {
+					fastLane: fast,
+					prefix: emailUtils.getName(row.email),
+					platform: row.platform,
+					username: row.username,
+					trustLevel: row.trustLevel,
+					reason: row.reason
+				}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
+
+				if (verdict && !verdict.prefixOk) {
+					await this.rejectByAi(c, row, verdict.reason);
+					continue;
+				}
+
+				if (verdict && fast) {
+					await this.approveWithFallback(c, row, 'auto', null, true);
+					continue;
+				}
+
+				if (!verdict || verdict.decision === 'review') {
+					continue;
+				}
+
+				if (verdict.decision === 'reject') {
+					await this.rejectByAi(c, row, verdict.reason);
+					continue;
+				}
+
+				await this.approveWithFallback(c, row, 'ai-approved', null, true);
+				continue;
+			}
+
 			if (fast) {
-				await this.approveWithFallback(c, row, 'auto');
-				continue;
+				await this.approveWithFallback(c, row, 'auto', null, true);
 			}
-
-			if (!useAi) {
-				continue;
-			}
-
-			const verdict = await aiService.reviewApplication(c, {
-				fastLane: false,
-				prefix: emailUtils.getName(row.email),
-				platform: row.platform,
-				username: row.username,
-				trustLevel: row.trustLevel,
-				reason: row.reason
-			}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel });
-
-			if (!verdict || verdict.decision === 'review') {
-				continue;
-			}
-
-			if (!verdict.prefixOk || verdict.decision === 'reject') {
-				await this.rejectByAi(c, row, verdict.reason);
-				continue;
-			}
-
-			await this.approveWithFallback(c, row, 'ai-approved');
 		}
 
 		const totalRow = await orm(c).select({ total: count() }).from(apply)
@@ -282,12 +296,32 @@ const applyService = {
 			return {};
 		}
 
-		return {
+		const result = {
 			email: row.email,
 			status: row.status,
 			remark: row.remark,
 			createTime: row.createTime
 		};
+
+		// 待审单附带审核进度：按“信任等级降序 + 同级先提交在前”的优先级计算排队位次
+		if (row.status === applyConst.status.PENDING) {
+
+			const mineTl = row.trustLevel === null ? -1 : row.trustLevel;
+
+			const totalRow = await orm(c).select({ total: count() }).from(apply)
+				.where(eq(apply.status, applyConst.status.PENDING)).get();
+
+			const aheadRow = await orm(c).select({ c: count() }).from(apply).where(and(
+				eq(apply.status, applyConst.status.PENDING),
+				sql`(CASE WHEN ${apply.trustLevel} IS NULL THEN -1 ELSE ${apply.trustLevel} END > ${mineTl}
+				     OR (${apply.trustLevel} = ${mineTl} AND ${apply.applyId} < ${row.applyId}))`
+			)).get();
+
+			result.queue = aheadRow.c + 1;
+			result.total = totalRow.total;
+		}
+
+		return result;
 	},
 
 	async list(c, params) {

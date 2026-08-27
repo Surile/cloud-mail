@@ -365,6 +365,7 @@ const zh = {
     applySubmitted: '申请已提交',
     applyPending: '审核中',
     applyPendingTip: '通常 24 小时内完成审核，本页会自动刷新结果，也可以稍后回来查看。',
+    applyQueue: '排队进度：第 {queue} 位 / 共 {total} 位待审（等级高的优先，同级先到先审）',
     applyApproved: '申请已通过',
     applyApprovedTip: '你的邮箱已开通，返回登录页重新登录即可进入邮箱。',
     applyRejected: '申请被驳回',
