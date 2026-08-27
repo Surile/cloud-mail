@@ -353,6 +353,7 @@ const en = {
     clientSecret: 'Client Secret',
     notOwner: 'Base email does not belong to you',
     applyTitle: 'Apply for Email',
+    applyEntry: 'Apply for one',
     applyGuideDesc: 'Sign in and submit an application. Once approved, you will get your own mailbox.',
     applyLoginFirst: 'Sign in to apply',
     applyReason: 'Reason',
