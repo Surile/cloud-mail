@@ -443,7 +443,7 @@
                     <Icon class="warning" icon="fe:warning" width="18" height="18"/>
                   </el-tooltip>
                 </div>
-                <el-input-number @change="change" :style="`width: ${ locale === 'en' ?  100 : 80 }px;`"
+                <el-input-number @change="change" style="width: 110px"
                                  v-model="setting.applyAutoTrustLevel" :min="0" :max="9"/>
               </div>
             </div>
