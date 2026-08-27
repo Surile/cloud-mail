@@ -100,7 +100,7 @@ import {Icon} from "@iconify/vue";
 import loading from "@/components/loading/index.vue";
 import {useSettingStore} from "@/store/setting.js";
 import {applyApprove, applyBatchReview, applyList, applyReject} from "@/request/apply.js";
-import dayjs from "dayjs";
+import {tzDayjs} from "@/utils/day.js";
 import {useI18n} from "vue-i18n";
 
 defineOptions({
@@ -139,7 +139,7 @@ function trustTagType(level) {
 
 function formatTime(row) {
   if (!row.createTime) return ''
-  return dayjs(row.createTime).format('YYYY-MM-DD HH:mm')
+  return tzDayjs(row.createTime).format('YYYY-MM-DD HH:mm')
 }
 
 async function getList() {
@@ -290,6 +290,30 @@ onMounted(getList)
 .scrollbar {
   height: calc(100% - 110px);
   padding: 0 10px;
+}
+
+.loading {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--loadding-background);
+  z-index: 2;
+}
+
+.loading-show {
+  transition: all 200ms ease 200ms;
+  opacity: 1;
+}
+
+.loading-hide {
+  pointer-events: none;
+  transition: var(--loading-hide-transition);
+  opacity: 0;
 }
 
 .applicant-cell {
