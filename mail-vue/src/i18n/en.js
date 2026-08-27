@@ -403,7 +403,8 @@ const en = {
     zhipuModelPlaceholder: 'glm-4.7-flash',
     batchReview: 'AI Batch Review',
     batchReviewConfirm: 'Batch-review pending applications: invite codes and trust-threshold applicants are approved directly, the rest are judged by AI (via the Zhipu fallback). Keep this page open while it runs.',
-    batchProgress: 'Reviewing, {remaining} pending left',
+    batchRunningMsg: 'Batch review running: processed {processed} · approved {approved} · rejected {rejected} · manual {kept} · remaining {remaining}',
+    batchDoneSummary: 'Batch review finished: processed {processed}, approved {approved}, rejected {rejected}, manual {kept}',
     batchDone: 'Batch review finished'
 }
 

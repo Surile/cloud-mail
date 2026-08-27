@@ -184,12 +184,14 @@ const applyService = {
 		await this.notify(c, applyRow, 'pending');
 	},
 
+	// 返回 true=开通成功；false=失败回落（留待审或作废）
 	async approveWithFallback(c, applyRow, mode, silent) {
 		try {
 			await this.doApprove(c, applyRow, 0);
 			if (!silent) {
 				await this.notify(c, applyRow, mode);
 			}
+			return true;
 		} catch (e) {
 			// 身份已绑定邮箱（重复单/审批期间已自行登录绑定）：申请作废，避免永久卡在待审队列
 			const voided = e.message === t('oauthBound');
@@ -202,6 +204,7 @@ const applyService = {
 			if (!silent) {
 				await this.notify(c, applyRow, 'fallback');
 			}
+			return false;
 		}
 	},
 
@@ -222,6 +225,10 @@ const applyService = {
 			.limit(batchSize)
 			.all();
 
+		let approved = 0;
+		let rejected = 0;
+		let kept = 0;
+
 		for (const row of rows) {
 
 			const fast = (row.regCode && row.regCode.trim()) ||
@@ -241,36 +248,44 @@ const applyService = {
 
 				if (verdict && !verdict.prefixOk) {
 					await this.rejectByAi(c, row, verdict.reason);
+					rejected++;
 					continue;
 				}
 
 				if (verdict && fast) {
-					await this.approveWithFallback(c, row, 'auto', null, true);
+					const ok = await this.approveWithFallback(c, row, 'auto', true);
+					ok ? approved++ : kept++;
 					continue;
 				}
 
 				if (!verdict || verdict.decision === 'review') {
+					kept++;
 					continue;
 				}
 
 				if (verdict.decision === 'reject') {
 					await this.rejectByAi(c, row, verdict.reason);
+					rejected++;
 					continue;
 				}
 
-				await this.approveWithFallback(c, row, 'ai-approved', null, true);
+				const ok = await this.approveWithFallback(c, row, 'ai-approved', true);
+				ok ? approved++ : kept++;
 				continue;
 			}
 
 			if (fast) {
-				await this.approveWithFallback(c, row, 'auto', null, true);
+				const ok = await this.approveWithFallback(c, row, 'auto', true);
+				ok ? approved++ : kept++;
+			} else {
+				kept++;
 			}
 		}
 
 		const totalRow = await orm(c).select({ total: count() }).from(apply)
 			.where(eq(apply.status, applyConst.status.PENDING)).get();
 
-		return { processed: rows.length, remaining: totalRow.total };
+		return { processed: rows.length, approved, rejected, kept, remaining: totalRow.total };
 	},
 
 	async rejectByAi(c, applyRow, reason) {
