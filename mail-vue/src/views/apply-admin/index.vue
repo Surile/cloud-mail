@@ -18,6 +18,12 @@
       </el-tooltip>
     </div>
 
+    <el-alert v-if="batchRunning" type="warning" :closable="false" class="batch-alert">
+      <template #title>
+        {{ $t('batchRunningMsg', {processed: batchProgress.processed, approved: batchProgress.approved, rejected: batchProgress.rejected, kept: batchProgress.kept, remaining: batchProgress.remaining}) }}
+      </template>
+    </el-alert>
+
     <el-scrollbar class="scrollbar">
       <div class="loading" :class="listLoading ? 'loading-show' : 'loading-hide'" :style="first ? 'background: transparent' : ''">
         <loading/>
@@ -130,6 +136,7 @@ const rejectRemark = ref('')
 const currentRow = ref(null)
 const auditLoading = ref(false)
 const batchRunning = ref(false)
+const batchProgress = reactive({processed: 0, approved: 0, rejected: 0, kept: 0, remaining: 0})
 
 function trustTagType(level) {
   if (level >= 3) return 'success'
@@ -232,18 +239,38 @@ async function batchReview() {
   }
 
   batchRunning.value = true
+  batchProgress.processed = 0
+  batchProgress.approved = 0
+  batchProgress.rejected = 0
+  batchProgress.kept = 0
+  batchProgress.remaining = 0
 
   try {
-    let remaining = -1
     let rounds = 0
+    let go = true
 
-    do {
+    while (go && rounds < 200) {
       const data = await applyBatchReview()
-      remaining = data.remaining
+      batchProgress.processed += data.processed
+      batchProgress.approved += data.approved
+      batchProgress.rejected += data.rejected
+      batchProgress.kept += data.kept
+      batchProgress.remaining = data.remaining
       rounds++
-    } while (remaining > 0 && rounds < 200)
+      go = data.processed > 0 && data.remaining > 0
+    }
 
-    ElMessage({message: t('batchDone'), type: 'success', plain: true})
+    ElMessage({
+      message: t('batchDoneSummary', {
+        processed: batchProgress.processed,
+        approved: batchProgress.approved,
+        rejected: batchProgress.rejected,
+        kept: batchProgress.kept
+      }),
+      type: 'success',
+      plain: true,
+      duration: 6000
+    })
     getList()
   } finally {
     batchRunning.value = false
@@ -284,7 +311,16 @@ onMounted(getList)
     &:hover {
       color: var(--el-color-primary);
     }
+
+    &.running {
+      opacity: 0.35;
+      pointer-events: none;
+    }
   }
+}
+
+.batch-alert {
+  margin: 0 10px 10px;
 }
 
 .scrollbar {

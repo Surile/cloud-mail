@@ -403,7 +403,8 @@ const zh = {
     zhipuModelPlaceholder: 'glm-4.7-flash',
     batchReview: 'AI 批量补审',
     batchReviewConfirm: '将对待审核申请执行批量补审：注册码 / 达到信任阈值的按免审政策直接开通，其余交由 AI 判定（使用智谱兜底通道）。执行期间请勿关闭页面。',
-    batchProgress: '补审进行中，剩余待审 {remaining} 条',
+    batchRunningMsg: '批量补审进行中：已处理 {processed} 条 · 开通 {approved} · 驳回 {rejected} · 转人工 {kept} · 剩余 {remaining} 条',
+    batchDoneSummary: '批量补审完成：共处理 {processed} 条，开通 {approved} 条，驳回 {rejected} 条，转人工 {kept} 条',
     batchDone: '批量补审完成'
 }
 export default zh
