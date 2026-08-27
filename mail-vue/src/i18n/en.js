@@ -390,7 +390,9 @@ const en = {
     operate: 'Actions',
     applySetting: 'Application Review',
     applyAutoTrustLevel: 'Auto Approve Trust Level',
-    applyAutoTrustLevelDesc: 'Applicants with a trust level at or above this value are approved automatically; set 0 to disable.'
+    applyAutoTrustLevelDesc: 'Applicants with a trust level at or above this value are approved automatically; set 0 to disable.',
+    applyAiReview: 'AI Auto Review',
+    applyAiReviewDesc: 'When enabled, every application is first judged by AI on whether the prefix looks like a real personal name (e.g. wangxiaoming); if not, it is rejected on the spot. L3+ fast lane passes once the prefix looks human. Others are further judged on the reason: plausible ones are approved instantly, obvious spam rejected, uncertain ones fall back to manual review — leniency decreases with trust level and the audit queue is sorted by trust level first. AI outages fall back to manual.'
 }
 
 export default en

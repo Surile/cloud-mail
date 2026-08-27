@@ -22,8 +22,8 @@ id = "2io01d4b299e481b9de060ece9e7785c"
 #binding = "r2"
 #bucket_name = "email"
 
-#[ai]
-#binding = "ai"
+[ai]
+binding = "ai"
 
 [assets]
 binding = "assets"

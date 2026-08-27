@@ -447,6 +447,16 @@
                                  v-model="setting.applyAutoTrustLevel" :min="0" :max="9"/>
               </div>
             </div>
+            <div class="setting-item">
+              <div>
+                <span>{{ $t('applyAiReview') }}</span>
+                <el-tooltip effect="dark" :content="$t('applyAiReviewDesc')">
+                  <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                </el-tooltip>
+              </div>
+              <el-switch @change="change" :before-change="beforeChange" :active-value="1" :inactive-value="0"
+                         v-model="setting.applyAiReview"/>
+            </div>
           </div>
 
           <div class="settings-card about">
