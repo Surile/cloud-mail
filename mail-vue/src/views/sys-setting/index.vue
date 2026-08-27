@@ -466,9 +466,11 @@
                   <Icon class="warning" icon="fe:warning" width="18" height="18"/>
                 </el-tooltip>
               </div>
-              <div>
-                <el-input type="password" show-password style="width: 200px" v-model="setting.zhipuApiKey"
-                          :placeholder="$t('zhipuKeyLabel')" autocomplete="off" @change="saveZhipuKey"/>
+              <div class="forward">
+                <span>{{ setting.zhipuApiKey || $t('notSet') }}</span>
+                <el-button class="opt-button" size="small" type="primary" @click="openZhipuEdit">
+                  <Icon icon="fluent:edit-32-regular" width="16" height="16"/>
+                </el-button>
               </div>
             </div>
           </div>
@@ -736,6 +738,13 @@
                            :show-overflow-tooltip="true"/>
         </el-table>
       </el-dialog>
+      <el-dialog v-model="zhipuEditShow" :title="$t('zhipuKeyLabel')" width="360px" @closed="zhipuKeyInput = ''">
+        <el-input type="password" show-password v-model="zhipuKeyInput" :placeholder="$t('zhipuKeyLabel')"
+                  autocomplete="off" @keyup.enter="saveZhipuKey"/>
+        <el-button class="zhipu-save" type="primary" :loading="zhipuSaving" @click="saveZhipuKey">
+          {{ $t('save') }}
+        </el-button>
+      </el-dialog>
       <el-dialog v-model="regVerifyCountShow" :title="$t('rulesVerifyTitle',{count: regVerifyCount})"
                  @closed="regVerifyCount = setting.regVerifyCount">
         <form @submit.prevent>
@@ -986,6 +995,9 @@ let addVerifyCount = ref(1)
 let backup = '{}'
 const addS3Show = ref(false)
 const addVerifyCountShow = ref(false)
+const zhipuEditShow = ref(false)
+const zhipuKeyInput = ref('')
+const zhipuSaving = ref(false)
 const regVerifyCountShow = ref(false)
 const resendTokenForm = reactive({
   domain: '',
@@ -1414,8 +1426,30 @@ function saveAiCodeFilter() {
   editSetting({aiCodeFilter: aiCodeFilter.value + ''})
 }
 
+function openZhipuEdit() {
+  zhipuKeyInput.value = ''
+  zhipuEditShow.value = true
+}
+
 function saveZhipuKey() {
-  editSetting({zhipuApiKey: (setting.zhipuApiKey || '').trim()})
+
+  if (zhipuSaving.value) return
+
+  const value = (zhipuKeyInput.value || '').trim()
+
+  if (!value) {
+    ElMessage({message: t('emptyZhipuKey'), type: 'warning', plain: true})
+    return
+  }
+
+  zhipuSaving.value = true
+
+  editSetting({zhipuApiKey: value}).then(() => {
+    setting.zhipuApiKey = value.slice(0, 6) + '******'
+    zhipuEditShow.value = false
+  }).finally(() => {
+    zhipuSaving.value = false
+  })
 }
 
 const opacityChange = debounce(doOpacityChange, 1000, {
@@ -1636,6 +1670,7 @@ function change(e) {
   delete settingForm.s3AccessKey
   delete settingForm.s3SecretKey
   delete settingForm.tgBotToken
+  delete settingForm.zhipuApiKey
   delete settingForm.resendTokens
   editSetting(settingForm, false)
 }
