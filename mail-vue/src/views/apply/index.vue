@@ -33,6 +33,8 @@
             </div>
           </template>
         </el-input>
+        <el-input v-model="form.code" type="text" :placeholder="$t('applyRegKeyOptional')" autocomplete="off"
+                  class="code-input" @keyup.enter="submit"/>
         <el-input v-model="form.reason" type="textarea" :rows="4" maxlength="300" show-word-limit
                   :placeholder="$t('applyReasonPh')"/>
         <el-button class="btn" type="primary" :loading="submitLoading" @click="submit">{{ $t('applySubmit') }}</el-button>
@@ -104,7 +106,8 @@ const submitLoading = ref(false)
 const record = ref({})
 const form = reactive({
   prefix: '',
-  reason: ''
+  reason: '',
+  code: ''
 })
 const mySelect = ref()
 const domainList = settingStore.domainList
@@ -214,11 +217,12 @@ function submit() {
 
   submitLoading.value = true
 
-  applyAdd({token: sessionStorage.getItem('applyJwt'), email: email, reason: form.reason.trim()})
+  applyAdd({token: sessionStorage.getItem('applyJwt'), email: email, reason: form.reason.trim(), code: (form.code || '').trim()})
       .then(() => {
         ElMessage({message: t('applySubmitted'), type: 'success', plain: true})
         form.prefix = ''
         form.reason = ''
+        form.code = ''
         fetchMine()
       })
       .catch(e => {
@@ -305,6 +309,10 @@ onUnmounted(stopPoll)
   }
 
   .prefix-input {
+    margin-bottom: 16px;
+  }
+
+  .code-input {
     margin-bottom: 16px;
   }
 

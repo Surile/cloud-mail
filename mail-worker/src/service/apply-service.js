@@ -10,6 +10,8 @@ import emailUtils from '../utils/email-utils';
 import userService from './user-service';
 import roleService from './role-service';
 import accountService from './account-service';
+import loginService from './login-service';
+import regKeyService from './reg-key-service';
 import saltHashUtils from '../utils/crypto-utils';
 import { applyConst, isDel, settingConst } from '../const/entity-const';
 import { and, desc, eq, count, like, or } from 'drizzle-orm';
@@ -104,6 +106,14 @@ const applyService = {
 			throw new BizError(t('isRegAccount'));
 		}
 
+		// 选填注册码：有效则免审开通并继承码绑定的角色；无效直接报错，可去掉码后重新提交
+		let regCodeInfo = null;
+		const regCode = String(params.code || '').trim();
+
+		if (regCode) {
+			regCodeInfo = await loginService.handleOpenRegKey(c, settingConst.regKey.OPEN, regCode);
+		}
+
 		const applyRow = await orm(c).insert(apply).values({
 			oauthUserId: oauthRow.oauthUserId,
 			platform: oauthRow.platform,
@@ -113,14 +123,16 @@ const applyService = {
 			trustLevel: oauthRow.trustLevel,
 			email: email,
 			reason: reasonText,
-			status: applyConst.status.PENDING
+			status: applyConst.status.PENDING,
+			regCode: regCode,
+			regRoleId: regCodeInfo ? regCodeInfo.type : 0
 		}).returning().get();
 
 		// 兼容尚未重跑 /api/init 的实例：设置缓存里还没有该字段时按默认 3 处理
 		const threshold = settingRow.applyAutoTrustLevel == null ? 3 : (Number(settingRow.applyAutoTrustLevel) || 0);
 		const trustLevel = Number(oauthRow.trustLevel === null ? -1 : oauthRow.trustLevel);
 
-		if (threshold > 0 && trustLevel >= threshold) {
+		if (regCodeInfo || (threshold > 0 && trustLevel >= threshold)) {
 			try {
 				await this.doApprove(c, applyRow, 0);
 				await this.notify(c, applyRow, 'auto');
@@ -248,12 +260,35 @@ const applyService = {
 			throw new BizError(t('isRegAccount'));
 		}
 
-		const defRole = await roleService.selectDefaultRole(c);
+		let roleId = null;
+
+		if (applyRow.regRoleId) {
+			const codeRole = await roleService.selectById(c, applyRow.regRoleId);
+			if (codeRole) {
+				roleId = applyRow.regRoleId;
+			}
+		}
+
+		if (!roleId) {
+			const defRole = await roleService.selectDefaultRole(c);
+			roleId = defRole.roleId;
+		}
+
+		let regKeyId = 0;
+
+		if (applyRow.regCode) {
+			const codeRow = await regKeyService.selectByCode(c, applyRow.regCode);
+			if (codeRow) {
+				regKeyId = codeRow.regKeyId;
+				await regKeyService.reduceCount(c, applyRow.regCode, 1);
+			}
+		}
 
 		await userService.add(c, {
 			email: applyRow.email,
 			password: saltHashUtils.genRandomPwd(),
-			type: defRole.roleId
+			type: roleId,
+			regKeyId: regKeyId
 		});
 
 		const userRow = await userService.selectByEmail(c, applyRow.email);

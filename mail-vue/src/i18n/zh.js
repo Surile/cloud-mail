@@ -354,6 +354,8 @@ const zh = {
     notOwner: '基础邮箱不属于您',
     applyTitle: '申请邮箱',
     applyEntry: '申请开通',
+    applyRegKeyOptional: '注册码（选填，凭码免审开通）',
+    applyRegKeyCol: '注册码',
     applyGuideDesc: '登录后提交邮箱开通申请，管理员审核通过即可获得专属邮箱。',
     applyLoginFirst: '登录后申请',
     applyReason: '申请理由',

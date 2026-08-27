@@ -354,6 +354,8 @@ const en = {
     notOwner: 'Base email does not belong to you',
     applyTitle: 'Apply for Email',
     applyEntry: 'Apply for one',
+    applyRegKeyOptional: 'Invite code (optional, waives review)',
+    applyRegKeyCol: 'Code',
     applyGuideDesc: 'Sign in and submit an application. Once approved, you will get your own mailbox.',
     applyLoginFirst: 'Sign in to apply',
     applyReason: 'Reason',

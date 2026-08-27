@@ -12,6 +12,8 @@ export const apply = sqliteTable('apply', {
 	email: text('email').notNull(),
 	reason: text('reason').default('').notNull(),
 	status: integer('status').default(0).notNull(),
+	regCode: text('reg_code').default('').notNull(),
+	regRoleId: integer('reg_role_id').default(0).notNull(),
 	remark: text('remark').default('').notNull(),
 	adminId: integer('admin_id').default(0).notNull(),
 	createTime: text('create_time').default(sql`CURRENT_TIMESTAMP`).notNull(),
