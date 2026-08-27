@@ -392,7 +392,9 @@ const en = {
     applyAutoTrustLevel: 'Auto Approve Trust Level',
     applyAutoTrustLevelDesc: 'Applicants with a trust level at or above this value are approved automatically; set 0 to disable.',
     applyAiReview: 'AI Auto Review',
-    applyAiReviewDesc: 'When enabled, every application is first judged by AI on whether the prefix looks like a real personal name (e.g. wangxiaoming); if not, it is rejected on the spot. L3+ fast lane passes once the prefix looks human. Others are further judged on the reason: plausible ones are approved instantly, obvious spam rejected, uncertain ones fall back to manual review — leniency decreases with trust level and the audit queue is sorted by trust level first. AI outages fall back to manual.'
+    applyAiReviewDesc: 'When enabled, every application is first judged by AI on whether the prefix looks like a real personal name (e.g. wangxiaoming); if not, it is rejected on the spot. L3+ fast lane passes once the prefix looks human. Others are further judged on the reason: plausible ones are approved instantly, obvious spam rejected, uncertain ones fall back to manual review — leniency decreases with trust level and the audit queue is sorted by trust level first. AI outages fall back to manual.',
+    zhipuKeyLabel: 'Zhipu Key (AI Fallback)',
+    zhipuKeyDesc: 'Fallback AI channel: when Workers AI is unavailable, review switches to the free Zhipu glm-4.7-flash model. Create a key on open.bigmodel.cn and paste it here; leave empty to disable.'
 }
 
 export default en

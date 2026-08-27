@@ -152,7 +152,7 @@ const applyService = {
 				username: oauthRow.username,
 				trustLevel: oauthRow.trustLevel,
 				reason: reasonText
-			});
+			}, settingRow.zhipuApiKey);
 
 			// 前缀审核不通过：任何人（含免审通道）直接驳回
 			if (verdict && !verdict.prefixOk) {

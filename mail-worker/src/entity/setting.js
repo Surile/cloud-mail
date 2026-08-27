@@ -65,6 +65,7 @@ export const setting = sqliteTable('setting', {
 	autoCleanDays: integer('auto_clean_days').default(0).notNull(),
 	autoCleanExclude: text('auto_clean_exclude').default('').notNull(),
 	applyAutoTrustLevel: integer('apply_auto_trust_level').default(3).notNull(),
-	applyAiReview: integer('apply_ai_review').default(0).notNull()
+	applyAiReview: integer('apply_ai_review').default(0).notNull(),
+	zhipuApiKey: text('zhipu_api_key').default('').notNull()
 });
 export default setting
