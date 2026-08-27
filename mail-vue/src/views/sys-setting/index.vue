@@ -454,18 +454,22 @@
                   <Icon class="warning" icon="fe:warning" width="18" height="18"/>
                 </el-tooltip>
               </div>
-              <el-switch @change="change" :before-change="beforeChange" :active-value="1" :inactive-value="0"
-                         v-model="setting.applyAiReview"/>
+              <div>
+                <el-switch @change="change" :before-change="beforeChange" :active-value="1" :inactive-value="0"
+                           v-model="setting.applyAiReview"/>
+              </div>
             </div>
             <div class="setting-item">
               <div>
-                <span>{{ $t('zhipuApiKey') }}</span>
-                <el-tooltip effect="dark" :content="$t('zhipuApiKeyDesc')">
+                <span>{{ $t('zhipuKeyLabel') }}</span>
+                <el-tooltip effect="dark" :content="$t('zhipuKeyDesc')">
                   <Icon class="warning" icon="fe:warning" width="18" height="18"/>
                 </el-tooltip>
               </div>
-              <el-input type="password" show-password style="width: 200px" v-model="setting.zhipuApiKey"
-                        :placeholder="$t('zhipuKeyLabel')" autocomplete="off" @change="saveZhipuKey"/>
+              <div>
+                <el-input type="password" show-password style="width: 200px" v-model="setting.zhipuApiKey"
+                          :placeholder="$t('zhipuKeyLabel')" autocomplete="off" @change="saveZhipuKey"/>
+              </div>
             </div>
           </div>
 
