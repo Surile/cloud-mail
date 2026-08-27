@@ -2280,7 +2280,7 @@ async function loadZhipuModels() {
 
 function saveZhipuModel() {
   editSetting({
-    zhipuModel: (setting.zhipuModel || "").trim() || "glm-4.7-flash",
+    zhipuModel: (setting.value.zhipuModel || "").trim() || "glm-4.7-flash",
   });
 }
 
@@ -2298,7 +2298,7 @@ function saveZhipuKey() {
 
   editSetting({ zhipuApiKey: value })
     .then(() => {
-      setting.zhipuApiKey = value.slice(0, 6) + "******";
+      setting.value.zhipuApiKey = value.slice(0, 6) + "******";
       zhipuEditShow.value = false;
     })
     .finally(() => {
