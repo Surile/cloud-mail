@@ -117,7 +117,7 @@ const aiService = {
 		}
 
 		try {
-			const res = await fetch('https://open.bigmodel.cn/api/paas/v4/chat/completions', {
+			const res = await fetch(this.zhipuEndpoint(zhipu) + '/chat/completions', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -151,7 +151,7 @@ const aiService = {
 		return [
 			{
 				role: 'system',
-				content: 'You are the admissions reviewer of a community mailbox service (a parody university). Evaluate TWO things and respond with ONLY one JSON object: {"prefix_ok":true,"decision":"approve","reason":"short reason in the same language as the application reason"}. No markdown, no extra text.\n1) prefix_ok — does the desired email prefix look like something a real person would use as a personal address? OK examples: full pinyin name (wangxiaoming), given name, name plus initials (yxwang2001), western name (john.smith). NOT ok: gibberish, digit strings, brand/meme/celebrity names, offensive words.\n2) decision — judge the application reason: approve if it describes a plausible legitimate personal use (community membership, website registrations, daily mail); reject if gibberish, copy-pasted filler, spam, abusive, illegal or bad-faith; review when unsure. Leniency scales with trust level: trust 2 — be lenient when prefix_ok and the reason is plausible; trust 1 — moderate; trust 0 — strict, prefer review when unsure.\nIf Fast lane is true, ignore the reason completely: only set prefix_ok, and set decision to "approve".'
+				content: 'You are the admissions reviewer of a community mailbox service (a parody university). Evaluate TWO things and respond with ONLY one JSON object: {"prefix_ok":true,"decision":"approve","reason":"用中文写的简短原因"}. No markdown, no extra text.\n1) prefix_ok — does the desired email prefix look like something a real person would use as a personal address? OK examples: full pinyin name (wangxiaoming), given name, name plus initials (yxwang2001), western name (john.smith). NOT ok: gibberish, digit strings, brand/meme/celebrity names, offensive words.\n2) decision — judge the application reason: approve if it describes a plausible legitimate personal use (community membership, website registrations, daily mail); reject if gibberish, copy-pasted filler, spam, abusive, illegal or bad-faith; review when unsure. Leniency scales with trust level: trust 2 — be lenient when prefix_ok and the reason is plausible; trust 1 — moderate; trust 0 — strict, prefer review when unsure.\nThe reason field MUST always be written in Chinese (中文), regardless of the language of the application.\nIf Fast lane is true, ignore the reason completely: only set prefix_ok, and set decision to "approve".'
 			},
 			{
 				role: 'user',
@@ -185,6 +185,11 @@ const aiService = {
 		}
 	},
 
+	zhipuEndpoint(zhipu) {
+		const url = String((zhipu && zhipu.baseUrl) || '').trim().replace(/\/+$/, '');
+		return url || 'https://open.bigmodel.cn/api/paas/v4';
+	},
+
 	// 拉取智谱可用模型列表（管理端下拉用）；无 Key 或失败返回空数组
 	async listZhipuModels(c, zhipu) {
 		const key = String((zhipu && zhipu.key) || '').trim();
@@ -194,7 +199,7 @@ const aiService = {
 		}
 
 		try {
-			const res = await fetch('https://open.bigmodel.cn/api/paas/v4/models', {
+			const res = await fetch(this.zhipuEndpoint(zhipu) + '/models', {
 				headers: {
 					'Authorization': 'Bearer ' + key
 				}

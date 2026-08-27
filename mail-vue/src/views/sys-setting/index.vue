@@ -863,6 +863,28 @@
                   </el-select>
                 </div>
               </div>
+              <div class="setting-item">
+                <div>
+                  <span>{{ $t("zhipuBaseUrlLabel") }}</span>
+                  <el-tooltip effect="dark" :content="$t('zhipuBaseUrlDesc')">
+                    <Icon
+                      class="warning"
+                      icon="fe:warning"
+                      width="18"
+                      height="18"
+                    />
+                  </el-tooltip>
+                </div>
+                <div>
+                  <el-input
+                    v-model="setting.zhipuBaseUrl"
+                    placeholder="https://open.bigmodel.cn/api/paas/v4"
+                    autocomplete="off"
+                    style="width: 320px"
+                    @change="saveZhipuBaseUrl"
+                  />
+                </div>
+              </div>
             </div>
           </div>
 
@@ -2280,7 +2302,14 @@ async function loadZhipuModels() {
 
 function saveZhipuModel() {
   editSetting({
-    zhipuModel: (setting.zhipuModel || "").trim() || "glm-4.7-flash",
+    zhipuModel: (setting.value.zhipuModel || "").trim() || "glm-4.7-flash",
+  });
+}
+
+function saveZhipuBaseUrl() {
+  const url = (setting.value.zhipuBaseUrl || "").trim().replace(/\/+$/, "");
+  editSetting({
+    zhipuBaseUrl: url || "https://open.bigmodel.cn/api/paas/v4",
   });
 }
 
@@ -2298,7 +2327,7 @@ function saveZhipuKey() {
 
   editSetting({ zhipuApiKey: value })
     .then(() => {
-      setting.zhipuApiKey = value.slice(0, 6) + "******";
+      setting.value.zhipuApiKey = value.slice(0, 6) + "******";
       zhipuEditShow.value = false;
     })
     .finally(() => {

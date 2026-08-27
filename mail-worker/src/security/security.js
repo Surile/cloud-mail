@@ -63,6 +63,7 @@ const requirePerms = [
 	'/apply/approve',
 	'/apply/reject',
 	'/apply/batchReview',
+	'/apply/batchStatus',
 	'/apply/zhipuModels'
 ];
 
@@ -93,7 +94,7 @@ const premKey = {
 	'reg-key:query': ['/regKey/list','/regKey/history'],
 	'reg-key:delete': ['/regKey/delete','/regKey/clearNotUse'],
 	'apply:query': ['/apply/list'],
-	'apply:audit': ['/apply/approve', '/apply/reject', '/apply/batchReview', '/apply/zhipuModels'],
+	'apply:audit': ['/apply/approve', '/apply/reject', '/apply/batchReview', '/apply/batchStatus', '/apply/zhipuModels'],
 };
 
 app.use('*', async (c, next) => {

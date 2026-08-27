@@ -38,8 +38,19 @@ const dbInit = {
 		await this.v3_7DB(c);
 		await this.v3_8DB(c);
 		await this.v3_9DB(c);
+		await this.v3_10DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_10DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_base_url TEXT NOT NULL DEFAULT 'https://open.bigmodel.cn/api/paas/v4';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	// v3_8DB 曾用于存量用户 u 别名补发，别名功能已移除；保留空实现占位维持版本序列

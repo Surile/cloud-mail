@@ -25,6 +25,10 @@ export function applyBatchReview() {
     return http.post('/apply/batchReview')
 }
 
+export function applyBatchStatus() {
+    return http.get('/apply/batchStatus')
+}
+
 export function zhipuModels() {
     return http.get('/apply/zhipuModels')
 }
