@@ -108,6 +108,9 @@
           <div class="switch" @click="show = 'login'" v-else>{{ $t('hasAccount') }} <span>{{ $t('loginSwitch') }}</span>
           </div>
         </template>
+        <div class="switch" v-else-if="oauthProviders.length > 0" @click="router.push('/apply')">
+          {{ $t('noAccount') }} <span>{{ $t('applyEntry') }}</span>
+        </div>
       </div>
     </div>
     <el-dialog class="bind-dialog" v-model="showBindForm"  title="注册邮箱" >
@@ -316,7 +319,8 @@ async function oauthGetUser() {
 
     if (!data.token) {
 
-      if (sessionStorage.getItem('oauthNext') === 'apply' && data.applyJwt) {
+      // 注册关闭时，未绑定身份一律走申请流程；注册开放则维持原绑定弹窗
+      if (data.applyJwt && (sessionStorage.getItem('oauthNext') === 'apply' || settingStore.settings.register === 1)) {
         sessionStorage.removeItem('oauthNext')
         sessionStorage.setItem('applyJwt', data.applyJwt)
         sessionStorage.setItem('applyUserInfo', JSON.stringify(data.userInfo))
