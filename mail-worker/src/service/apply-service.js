@@ -184,10 +184,12 @@ const applyService = {
 		await this.notify(c, applyRow, 'pending');
 	},
 
-	async approveWithFallback(c, applyRow, mode) {
+	async approveWithFallback(c, applyRow, mode, aliasEmail, silent) {
 		try {
-			const aliasEmail = await this.doApprove(c, applyRow, 0);
-			await this.notify(c, applyRow, mode, aliasEmail);
+			const alias = await this.doApprove(c, applyRow, 0);
+			if (!silent) {
+				await this.notify(c, applyRow, mode, aliasEmail ?? alias);
+			}
 		} catch (e) {
 			// 身份已绑定邮箱（重复单/审批期间已自行登录绑定）：申请作废，避免永久卡在待审队列
 			const voided = e.message === t('oauthBound');
@@ -197,7 +199,9 @@ const applyService = {
 				remark: applyRow.remark,
 				updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 			}).where(eq(apply.applyId, applyRow.applyId)).run();
-			await this.notify(c, applyRow, 'fallback');
+			if (!silent) {
+				await this.notify(c, applyRow, 'fallback');
+			}
 		}
 	},
 
@@ -224,7 +228,7 @@ const applyService = {
 				(threshold > 0 && Number(row.trustLevel === null ? -1 : row.trustLevel) >= threshold);
 
 			if (fast) {
-				await this.approveWithFallback(c, row, 'auto');
+				await this.approveWithFallback(c, row, 'auto', null, true);
 				continue;
 			}
 
@@ -250,7 +254,7 @@ const applyService = {
 				continue;
 			}
 
-			await this.approveWithFallback(c, row, 'ai-approved');
+			await this.approveWithFallback(c, row, 'ai-approved', null, true);
 		}
 
 		const totalRow = await orm(c).select({ total: count() }).from(apply)
