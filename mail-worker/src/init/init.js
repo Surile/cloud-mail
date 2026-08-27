@@ -42,31 +42,15 @@ const dbInit = {
 		return c.text('success');
 	},
 
+	// v3_8DB 曾用于存量用户 u 别名补发，别名功能已移除；保留空实现占位维持版本序列
+	async v3_8DB(c) {
+	},
+
 	async v3_9DB(c) {
 		try {
 			await c.env.db.batch([
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_model TEXT NOT NULL DEFAULT 'glm-4.7-flash';`)
 			]);
-		} catch (e) {
-			console.warn(`跳过字段：${e.message}`);
-		}
-	},
-
-	// 给存量用户一次性补发低调别名：六位数字由 user_id 确定性推导（user_id 唯一故数字天然不撞号），
-	// 单条集合式 INSERT 完成，幂等（已有别名的用户自动跳过），可安全重跑
-	async v3_8DB(c) {
-		try {
-			await c.env.db.prepare(
-				`INSERT INTO account (email, name, user_id)
-				 SELECT 'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT) || substr(p.email, instr(p.email, '@')),
-				        'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT),
-				        p.user_id
-				 FROM (SELECT user_id, MIN(account_id) AS aid FROM account WHERE is_del = 0 GROUP BY user_id) m
-				 JOIN account p ON p.account_id = m.aid
-				 WHERE p.email LIKE '%@%'
-				   AND NOT EXISTS (SELECT 1 FROM account x WHERE x.user_id = p.user_id AND x.email LIKE 'u______@%')
-				   AND NOT EXISTS (SELECT 1 FROM account y WHERE y.email = 'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT) || substr(p.email, instr(p.email, '@')))`
-			).run();
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);
 		}
