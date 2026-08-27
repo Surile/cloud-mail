@@ -29,6 +29,9 @@
           </template>
         </el-table-column>
         <el-table-column prop="platform" :label="$t('oauthSetting')" :width="90"/>
+        <el-table-column prop="regCode" :label="$t('applyRegKeyCol')" :width="110" :show-overflow-tooltip="true">
+          <template #default="{row}">{{ row.regCode || '—' }}</template>
+        </el-table-column>
         <el-table-column :label="$t('trustLevel')" :width="100">
           <template #default="{row}">
             <el-tag v-if="row.trustLevel !== null && row.trustLevel !== undefined"

@@ -314,7 +314,7 @@ const userService = {
 
 	async add(c, params) {
 
-		const { email, type, password } = params;
+		const { email, type, password, regKeyId } = params;
 
 		if (!c.env.domain.includes(emailUtils.getDomain(email))) {
 			throw new BizError(t('notEmailDomain'));
@@ -342,7 +342,7 @@ const userService = {
 
 		const { salt, hash } = await saltHashUtils.hashPassword(password);
 
-		const userId = await userService.insert(c, { email, password: hash, salt, type });
+		const userId = await userService.insert(c, { email, password: hash, salt, type, regKeyId: regKeyId || 0 });
 
 		await userService.updateUserInfo(c, userId, true);
 
