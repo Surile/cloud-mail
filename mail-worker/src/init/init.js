@@ -52,51 +52,21 @@ const dbInit = {
 		}
 	},
 
-	// 给存量用户一次性补发低调别名（u<随机六位>@主邮箱后缀）；已有别名的用户自动跳过，可安全重跑
+	// 给存量用户一次性补发低调别名：六位数字由 user_id 确定性推导（user_id 唯一故数字天然不撞号），
+	// 单条集合式 INSERT 完成，幂等（已有别名的用户自动跳过），可安全重跑
 	async v3_8DB(c) {
 		try {
-			const { results: rows } = await c.env.db.prepare(
-				`SELECT a.user_id AS uid, a.email FROM account a
-				 JOIN (SELECT user_id, MIN(account_id) AS aid FROM account GROUP BY user_id) m
-				   ON m.aid = a.account_id
-				 WHERE a.is_del = 0`
-			).all();
-
-			const statements = [];
-
-			for (const row of rows) {
-				const hasAlias = await c.env.db.prepare(
-					`SELECT 1 FROM account WHERE user_id = ? AND email LIKE 'u______@%' LIMIT 1`
-				).bind(row.uid).first();
-
-				if (hasAlias) {
-					continue;
-				}
-
-				const atIndex = row.email.indexOf('@');
-
-				for (let i = 0; i < 20; i++) {
-					const buf = new Uint32Array(1);
-					crypto.getRandomValues(buf);
-					const candidate = 'u' + (100000 + buf[0] % 900000) + row.email.slice(atIndex);
-
-					const dup = await c.env.db.prepare(
-						`SELECT 1 FROM account WHERE email = ? LIMIT 1`
-					).bind(candidate).first();
-
-					if (!dup) {
-						statements.push(c.env.db.prepare(
-							`INSERT INTO account (email, name, user_id) VALUES (?, ?, ?)`
-						).bind(candidate, candidate.slice(0, candidate.indexOf('@')), row.uid));
-						break;
-					}
-				}
-			}
-
-			if (statements.length > 0) {
-				await c.env.db.batch(statements);
-				console.log(`已为 ${statements.length} 个存量用户补发别名`);
-			}
+			await c.env.db.prepare(
+				`INSERT INTO account (email, name, user_id)
+				 SELECT 'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT) || substr(p.email, instr(p.email, '@')),
+				        'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT),
+				        p.user_id
+				 FROM (SELECT user_id, MIN(account_id) AS aid FROM account WHERE is_del = 0 GROUP BY user_id) m
+				 JOIN account p ON p.account_id = m.aid
+				 WHERE p.email LIKE '%@%'
+				   AND NOT EXISTS (SELECT 1 FROM account x WHERE x.user_id = p.user_id AND x.email LIKE 'u______@%')
+				   AND NOT EXISTS (SELECT 1 FROM account y WHERE y.email = 'u' || CAST(100000 + ((p.user_id - 1) % 900000) AS TEXT) || substr(p.email, instr(p.email, '@')))`
+			).run();
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);
 		}
