@@ -447,6 +447,26 @@
                                  v-model="setting.applyAutoTrustLevel" :min="0" :max="9"/>
               </div>
             </div>
+            <div class="setting-item">
+              <div>
+                <span>{{ $t('applyAiReview') }}</span>
+                <el-tooltip effect="dark" :content="$t('applyAiReviewDesc')">
+                  <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                </el-tooltip>
+              </div>
+              <el-switch @change="change" :before-change="beforeChange" :active-value="1" :inactive-value="0"
+                         v-model="setting.applyAiReview"/>
+            </div>
+            <div class="setting-item">
+              <div>
+                <span>{{ $t('zhipuApiKey') }}</span>
+                <el-tooltip effect="dark" :content="$t('zhipuApiKeyDesc')">
+                  <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                </el-tooltip>
+              </div>
+              <el-input type="password" show-password style="width: 200px" v-model="setting.zhipuApiKey"
+                        :placeholder="$t('zhipuKeyLabel')" autocomplete="off" @change="saveZhipuKey"/>
+            </div>
           </div>
 
           <div class="settings-card about">
@@ -1388,6 +1408,10 @@ function saveAutoClean() {
 
 function saveAiCodeFilter() {
   editSetting({aiCodeFilter: aiCodeFilter.value + ''})
+}
+
+function saveZhipuKey() {
+  editSetting({zhipuApiKey: (setting.zhipuApiKey || '').trim()})
 }
 
 const opacityChange = debounce(doOpacityChange, 1000, {

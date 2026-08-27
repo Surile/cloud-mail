@@ -390,6 +390,10 @@ const zh = {
     operate: '操作',
     applySetting: '申请审核',
     applyAutoTrustLevel: '自动通过信任等级',
-    applyAutoTrustLevelDesc: '信任等级达到该值的申请人将自动开通并绑定邮箱；设为 0 关闭自动审批。'
+    applyAutoTrustLevelDesc: '信任等级达到该值的申请人将自动开通并绑定邮箱；设为 0 关闭自动审批。',
+    applyAiReview: 'AI 自动审核',
+    applyAiReviewDesc: '开启后所有申请先由 AI 判定前缀是否像正常人名（如 wangxiaoming），不像则直接驳回；L3+ 免审通道前缀过关即开通。其余等级再由 AI 审核申请理由：合理自动开通、灌水违规自动驳回、拿不准进人工队列，宽松度随信任等级递减，审核队列按信任等级优先排序。AI 不可用时自动回落人工。',
+    zhipuKeyLabel: '智谱接口密钥',
+    zhipuKeyDesc: '备用 AI 通道：Workers AI 不可用时，申请审核自动改用智谱 glm-4.7-flash 免费模型。在智谱开放平台创建接口密钥后粘贴到这里，留空则不启用备用通道。'
 }
 export default zh

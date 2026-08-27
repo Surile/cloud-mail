@@ -12,9 +12,10 @@ import roleService from './role-service';
 import accountService from './account-service';
 import loginService from './login-service';
 import regKeyService from './reg-key-service';
+import aiService from './ai-service';
 import saltHashUtils from '../utils/crypto-utils';
 import { applyConst, isDel, settingConst } from '../const/entity-const';
-import { and, desc, eq, count, like, or } from 'drizzle-orm';
+import { and, desc, eq, count, like, or, sql } from 'drizzle-orm';
 import dayjs from 'dayjs';
 
 const REASON_MIN_LENGTH = 10;
@@ -131,25 +132,80 @@ const applyService = {
 		// 兼容尚未重跑 /api/init 的实例：设置缓存里还没有该字段时按默认 3 处理
 		const threshold = settingRow.applyAutoTrustLevel == null ? 3 : (Number(settingRow.applyAutoTrustLevel) || 0);
 		const trustLevel = Number(oauthRow.trustLevel === null ? -1 : oauthRow.trustLevel);
+		const useAi = Number(settingRow.applyAiReview) === 1;
+		const fastLane = regCodeInfo || (threshold > 0 && trustLevel >= threshold);
 
-		if (regCodeInfo || (threshold > 0 && trustLevel >= threshold)) {
-			try {
-				await this.doApprove(c, applyRow, 0);
-				await this.notify(c, applyRow, 'auto');
-				return;
-			} catch (e) {
-				applyRow.remark = (e.message || 'unknown').slice(0, 200);
-				await orm(c).update(apply).set({
-					status: applyConst.status.PENDING,
-					remark: applyRow.remark,
-					updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
-				}).where(eq(apply.applyId, applyRow.applyId)).run();
-				await this.notify(c, applyRow, 'fallback');
+		// AI 开启时，免审通道也要先过"前缀像正常人名"这一关；AI 关闭则维持原直接放行
+		if (fastLane && !useAi) {
+			await this.approveWithFallback(c, applyRow, 'auto');
+			return;
+		}
+
+		let verdict = null;
+
+		if (useAi) {
+
+			verdict = await aiService.reviewApplication(c, {
+				fastLane: fastLane,
+				prefix: emailUtils.getName(email),
+				platform: oauthRow.platform,
+				username: oauthRow.username,
+				trustLevel: oauthRow.trustLevel,
+				reason: reasonText
+			}, settingRow.zhipuApiKey);
+
+			// 前缀审核不通过：任何人（含免审通道）直接驳回
+			if (verdict && !verdict.prefixOk) {
+				await this.rejectByAi(c, applyRow, verdict.reason);
+				await this.notify(c, applyRow, 'ai-rejected');
 				return;
 			}
+
+			// 免审通道：前缀过关即成功，不看理由
+			if (verdict && fastLane) {
+				await this.approveWithFallback(c, applyRow, 'auto');
+				return;
+			}
+
+			if (verdict?.decision === 'approve') {
+				await this.approveWithFallback(c, applyRow, 'ai-approved');
+				return;
+			}
+
+			if (verdict?.decision === 'reject') {
+				await this.rejectByAi(c, applyRow, verdict.reason);
+				await this.notify(c, applyRow, 'ai-rejected');
+				return;
+			}
+
+			// verdict 为空（AI 不可用/解析失败）或 review：转人工队列
 		}
 
 		await this.notify(c, applyRow, 'pending');
+	},
+
+	async approveWithFallback(c, applyRow, mode) {
+		try {
+			const aliasEmail = await this.doApprove(c, applyRow, 0);
+			await this.notify(c, applyRow, mode, aliasEmail);
+		} catch (e) {
+			applyRow.remark = (e.message || 'unknown').slice(0, 200);
+			await orm(c).update(apply).set({
+				status: applyConst.status.PENDING,
+				remark: applyRow.remark,
+				updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
+			}).where(eq(apply.applyId, applyRow.applyId)).run();
+			await this.notify(c, applyRow, 'fallback');
+		}
+	},
+
+	async rejectByAi(c, applyRow, reason) {
+		applyRow.remark = '[AI] ' + reason;
+		await orm(c).update(apply).set({
+			status: applyConst.status.REJECTED,
+			remark: applyRow.remark,
+			updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
+		}).where(eq(apply.applyId, applyRow.applyId)).run();
 	},
 
 	async mine(c, params) {
@@ -204,7 +260,11 @@ const applyService = {
 
 		const listQuery = orm(c).select().from(apply)
 			.where(where)
-			.orderBy(desc(apply.applyId))
+			.orderBy(
+				sql`CASE WHEN ${apply.status} = 0 THEN 0 ELSE 1 END`,
+				sql`CASE WHEN ${apply.trustLevel} IS NULL THEN -1 ELSE ${apply.trustLevel} END DESC`,
+				desc(apply.applyId)
+			)
 			.limit(size)
 			.offset(num);
 
@@ -223,8 +283,8 @@ const applyService = {
 			throw new BizError(t('applyNotFound'));
 		}
 
-		await this.doApprove(c, applyRow, adminId);
-		await this.notify(c, applyRow, 'approved');
+		const aliasEmail = await this.doApprove(c, applyRow, adminId);
+		await this.notify(c, applyRow, 'approved', aliasEmail);
 	},
 
 	async doApprove(c, applyRow, adminId) {
@@ -293,6 +353,15 @@ const applyService = {
 
 		const userRow = await userService.selectByEmail(c, applyRow.email);
 
+		// 低调别名：额外赠送一个 u<随机六位>@同后缀 的地址，失败不影响开通本身
+		let aliasEmail = null;
+
+		try {
+			aliasEmail = await this.grantAlias(c, userRow.userId, applyRow.email);
+		} catch (e) {
+			console.error('grant alias failed:', e.message);
+		}
+
 		await orm(c).update(oauth).set({ userId: userRow.userId }).where(eq(oauth.oauthId, oauthRow.oauthId)).run();
 
 		await orm(c).update(apply).set({
@@ -300,6 +369,36 @@ const applyService = {
 			adminId: adminId,
 			updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
+
+		return aliasEmail;
+	},
+
+	async grantAlias(c, userId, primaryEmail) {
+
+		const domain = emailUtils.getDomain(primaryEmail);
+
+		let alias = null;
+
+		for (let i = 0; i < 20; i++) {
+			const buf = new Uint32Array(1);
+			crypto.getRandomValues(buf);
+			const candidate = 'u' + (100000 + (buf[0] % 900000));
+			const exists = await accountService.selectByEmailIncludeDel(c, candidate + '@' + domain);
+			if (!exists) {
+				alias = candidate;
+				break;
+			}
+		}
+
+		if (!alias) {
+			throw new Error('no available alias number');
+		}
+
+		const aliasEmail = alias + '@' + domain;
+
+		await accountService.insert(c, { userId: userId, email: aliasEmail, name: alias });
+
+		return aliasEmail;
 	},
 
 	async reject(c, params, adminId) {
@@ -324,7 +423,7 @@ const applyService = {
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
 	},
 
-	async notify(c, applyRow, mode) {
+	async notify(c, applyRow, mode, aliasEmail) {
 
 		if (!applyRow) {
 			return;
@@ -345,13 +444,16 @@ const applyService = {
 				auto: '邮箱申请已自动通过',
 				fallback: '邮箱申请自动通过失败，转人工审核',
 				pending: '收到新的邮箱申请（待人工审核）',
-				approved: '邮箱申请已人工通过'
+				approved: '邮箱申请已人工通过',
+				'ai-approved': 'AI 审核通过，已自动开通',
+				'ai-rejected': 'AI 审核驳回（可在后台复核）'
 			};
-			const reasonPart = mode === 'fallback' ? ['原因：', applyRow.remark].join('') : '';
+			const reasonPart = (mode === 'fallback' || mode === 'ai-rejected') ? ['原因：', applyRow.remark].join('') : '';
 			const lines = [
 				headMap[mode] || '邮箱申请状态更新',
 				['申请人：', who].join(''),
 				['期望地址：', applyRow.email].join(''),
+				aliasEmail ? ['低调别名：', aliasEmail].join('') : '',
 				reasonPart
 			];
 
