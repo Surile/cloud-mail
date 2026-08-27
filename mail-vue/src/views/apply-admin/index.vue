@@ -101,11 +101,11 @@
 </template>
 
 <script setup>
-import {computed, defineOptions, onMounted, reactive, ref} from "vue";
+import {computed, defineOptions, onMounted, onUnmounted, reactive, ref} from "vue";
 import {Icon} from "@iconify/vue";
 import loading from "@/components/loading/index.vue";
 import {useSettingStore} from "@/store/setting.js";
-import {applyApprove, applyBatchReview, applyList, applyReject} from "@/request/apply.js";
+import {applyApprove, applyBatchReview, applyBatchStatus, applyList, applyReject} from "@/request/apply.js";
 import {tzDayjs} from "@/utils/day.js";
 import {useI18n} from "vue-i18n";
 
@@ -137,6 +137,7 @@ const currentRow = ref(null)
 const auditLoading = ref(false)
 const batchRunning = ref(false)
 const batchProgress = reactive({processed: 0, approved: 0, rejected: 0, kept: 0, remaining: 0})
+let statusTimer = null
 
 function trustTagType(level) {
   if (level >= 3) return 'success'
@@ -238,46 +239,89 @@ async function batchReview() {
     return
   }
 
+  const data = await applyBatchReview()
+
+  if (!data.queued) {
+    ElMessage({message: t('noApplyFound'), type: 'info', plain: true})
+    return
+  }
+
+  ElMessage({
+    message: t('batchStarted', {queued: data.queued}),
+    type: 'success',
+    plain: true,
+    duration: 5000
+  })
+
   batchRunning.value = true
-  batchProgress.processed = 0
-  batchProgress.approved = 0
-  batchProgress.rejected = 0
-  batchProgress.kept = 0
-  batchProgress.remaining = 0
+  startBatchPolling()
+}
 
-  try {
-    let rounds = 0
-    let go = true
+function startBatchPolling() {
+  stopBatchPolling()
+  statusTimer = setInterval(pollBatchStatus, 3000)
+  pollBatchStatus()
+}
 
-    while (go && rounds < 200) {
-      const data = await applyBatchReview()
-      batchProgress.processed += data.processed
-      batchProgress.approved += data.approved
-      batchProgress.rejected += data.rejected
-      batchProgress.kept += data.kept
-      batchProgress.remaining = data.remaining
-      rounds++
-      go = data.processed > 0 && data.remaining > 0
-    }
-
-    ElMessage({
-      message: t('batchDoneSummary', {
-        processed: batchProgress.processed,
-        approved: batchProgress.approved,
-        rejected: batchProgress.rejected,
-        kept: batchProgress.kept
-      }),
-      type: 'success',
-      plain: true,
-      duration: 6000
-    })
-    getList()
-  } finally {
-    batchRunning.value = false
+function stopBatchPolling() {
+  if (statusTimer) {
+    clearInterval(statusTimer)
+    statusTimer = null
   }
 }
 
-onMounted(getList)
+async function pollBatchStatus() {
+
+  try {
+    const st = await applyBatchStatus()
+
+    if (st.running) {
+      batchRunning.value = true
+      if (st.stats) {
+        batchProgress.processed = st.stats.processed
+        batchProgress.approved = st.stats.approved
+        batchProgress.rejected = st.stats.rejected
+        batchProgress.kept = st.stats.kept
+        batchProgress.remaining = st.stats.remaining
+      }
+    } else {
+      stopBatchPolling()
+      if (batchRunning.value) {
+        batchRunning.value = false
+        ElMessage({
+          message: t('batchDoneSummary', {
+            processed: st.stats?.processed ?? 0,
+            approved: st.stats?.approved ?? 0,
+            rejected: st.stats?.rejected ?? 0,
+            kept: st.stats?.kept ?? 0
+          }),
+          type: 'success',
+          plain: true,
+          duration: 6000
+        })
+        getList()
+      }
+    }
+  } catch (e) {
+    // 轮询失败不打断：下一轮重试
+  }
+}
+
+onMounted(async () => {
+  getList()
+  // 进入页面时若后台队列仍在运行，恢复进度显示
+  try {
+    const st = await applyBatchStatus()
+    if (st.running) {
+      batchRunning.value = true
+      startBatchPolling()
+    }
+  } catch (e) {
+    // 忽略：状态获取失败按未运行处理
+  }
+})
+
+onUnmounted(stopBatchPolling)
 
 </script>
 
