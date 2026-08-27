@@ -394,6 +394,15 @@ const zh = {
     applyAiReview: 'AI 自动审核',
     applyAiReviewDesc: '开启后所有申请先由 AI 判定前缀是否像正常人名（如 wangxiaoming），不像则直接驳回；L3+ 免审通道前缀过关即开通。其余等级再由 AI 审核申请理由：合理自动开通、灌水违规自动驳回、拿不准进人工队列，宽松度随信任等级递减，审核队列按信任等级优先排序。AI 不可用时自动回落人工。',
     zhipuKeyLabel: '智谱接口密钥',
-    zhipuKeyDesc: '备用 AI 通道：Workers AI 不可用时，申请审核自动改用智谱 glm-4.7-flash 免费模型。在智谱开放平台创建接口密钥后粘贴到这里，留空则不启用备用通道。'
+    zhipuKeyDesc: '备用 AI 通道：Workers AI 不可用时，申请审核自动改用智谱 glm-4.7-flash 免费模型。在智谱开放平台创建接口密钥后粘贴到这里，留空则不启用备用通道。',
+    notSet: '未配置',
+    emptyZhipuKey: '请输入接口密钥',
+    zhipuModelLabel: '智谱模型',
+    zhipuModelDesc: '智谱兜底通道使用的模型，聚焦输入框可从接口密钥拉取可用模型列表，也可以手动输入任意模型 ID。',
+    zhipuModelPlaceholder: 'glm-4.7-flash',
+    batchReview: 'AI 批量补审',
+    batchReviewConfirm: '将对待审核申请执行批量补审：注册码 / 达到信任阈值的按免审政策直接开通，其余交由 AI 判定（使用智谱兜底通道）。执行期间请勿关闭页面。',
+    batchProgress: '补审进行中，剩余待审 {remaining} 条',
+    batchDone: '批量补审完成'
 }
 export default zh

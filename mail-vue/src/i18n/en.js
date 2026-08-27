@@ -394,7 +394,16 @@ const en = {
     applyAiReview: 'AI Auto Review',
     applyAiReviewDesc: 'When enabled, every application is first judged by AI on whether the prefix looks like a real personal name (e.g. wangxiaoming); if not, it is rejected on the spot. L3+ fast lane passes once the prefix looks human. Others are further judged on the reason: plausible ones are approved instantly, obvious spam rejected, uncertain ones fall back to manual review — leniency decreases with trust level and the audit queue is sorted by trust level first. AI outages fall back to manual.',
     zhipuKeyLabel: 'Zhipu Key (AI Fallback)',
-    zhipuKeyDesc: 'Fallback AI channel: when Workers AI is unavailable, review switches to the free Zhipu glm-4.7-flash model. Create a key on open.bigmodel.cn and paste it here; leave empty to disable.'
+    zhipuKeyDesc: 'Fallback AI channel: when Workers AI is unavailable, review switches to the free Zhipu glm-4.7-flash model. Create a key on open.bigmodel.cn and paste it here; leave empty to disable.',
+    notSet: 'Not set',
+    emptyZhipuKey: 'Please enter the key',
+    zhipuModelLabel: 'Zhipu Model',
+    zhipuModelDesc: 'Model used by the Zhipu fallback channel. Focus the select to fetch available models with your key, or type any model ID manually.',
+    zhipuModelPlaceholder: 'glm-4.7-flash',
+    batchReview: 'AI Batch Review',
+    batchReviewConfirm: 'Batch-review pending applications: invite codes and trust-threshold applicants are approved directly, the rest are judged by AI (via the Zhipu fallback). Keep this page open while it runs.',
+    batchProgress: 'Reviewing, {remaining} pending left',
+    batchDone: 'Batch review finished'
 }
 
 export default en

@@ -36,8 +36,70 @@ const dbInit = {
 		await this.v3_5DB(c);
 		await this.v3_6DB(c);
 		await this.v3_7DB(c);
+		await this.v3_8DB(c);
+		await this.v3_9DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_9DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_model TEXT NOT NULL DEFAULT 'glm-4.7-flash';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	// 给存量用户一次性补发低调别名（u<随机六位>@主邮箱后缀）；已有别名的用户自动跳过，可安全重跑
+	async v3_8DB(c) {
+		try {
+			const { results: rows } = await c.env.db.prepare(
+				`SELECT a.user_id AS uid, a.email FROM account a
+				 JOIN (SELECT user_id, MIN(account_id) AS aid FROM account GROUP BY user_id) m
+				   ON m.aid = a.account_id
+				 WHERE a.is_del = 0`
+			).all();
+
+			const statements = [];
+
+			for (const row of rows) {
+				const hasAlias = await c.env.db.prepare(
+					`SELECT 1 FROM account WHERE user_id = ? AND email LIKE 'u______@%' LIMIT 1`
+				).bind(row.uid).first();
+
+				if (hasAlias) {
+					continue;
+				}
+
+				const atIndex = row.email.indexOf('@');
+
+				for (let i = 0; i < 20; i++) {
+					const buf = new Uint32Array(1);
+					crypto.getRandomValues(buf);
+					const candidate = 'u' + (100000 + buf[0] % 900000) + row.email.slice(atIndex);
+
+					const dup = await c.env.db.prepare(
+						`SELECT 1 FROM account WHERE email = ? LIMIT 1`
+					).bind(candidate).first();
+
+					if (!dup) {
+						statements.push(c.env.db.prepare(
+							`INSERT INTO account (email, name, user_id) VALUES (?, ?, ?)`
+						).bind(candidate, candidate.slice(0, candidate.indexOf('@')), row.uid));
+						break;
+					}
+				}
+			}
+
+			if (statements.length > 0) {
+				await c.env.db.batch(statements);
+				console.log(`已为 ${statements.length} 个存量用户补发别名`);
+			}
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	async v3_7DB(c) {
