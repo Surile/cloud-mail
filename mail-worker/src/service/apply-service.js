@@ -134,8 +134,8 @@ const applyService = {
 
 		if (regCodeInfo || (threshold > 0 && trustLevel >= threshold)) {
 			try {
-				await this.doApprove(c, applyRow, 0);
-				await this.notify(c, applyRow, 'auto');
+				const aliasEmail = await this.doApprove(c, applyRow, 0);
+				await this.notify(c, applyRow, 'auto', aliasEmail);
 				return;
 			} catch (e) {
 				applyRow.remark = (e.message || 'unknown').slice(0, 200);
@@ -223,8 +223,8 @@ const applyService = {
 			throw new BizError(t('applyNotFound'));
 		}
 
-		await this.doApprove(c, applyRow, adminId);
-		await this.notify(c, applyRow, 'approved');
+		const aliasEmail = await this.doApprove(c, applyRow, adminId);
+		await this.notify(c, applyRow, 'approved', aliasEmail);
 	},
 
 	async doApprove(c, applyRow, adminId) {
@@ -293,6 +293,15 @@ const applyService = {
 
 		const userRow = await userService.selectByEmail(c, applyRow.email);
 
+		// 低调别名：额外赠送一个 u<随机六位>@同后缀 的地址，失败不影响开通本身
+		let aliasEmail = null;
+
+		try {
+			aliasEmail = await this.grantAlias(c, userRow.userId, applyRow.email);
+		} catch (e) {
+			console.error('grant alias failed:', e.message);
+		}
+
 		await orm(c).update(oauth).set({ userId: userRow.userId }).where(eq(oauth.oauthId, oauthRow.oauthId)).run();
 
 		await orm(c).update(apply).set({
@@ -300,6 +309,36 @@ const applyService = {
 			adminId: adminId,
 			updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
+
+		return aliasEmail;
+	},
+
+	async grantAlias(c, userId, primaryEmail) {
+
+		const domain = emailUtils.getDomain(primaryEmail);
+
+		let alias = null;
+
+		for (let i = 0; i < 20; i++) {
+			const buf = new Uint32Array(1);
+			crypto.getRandomValues(buf);
+			const candidate = 'u' + (100000 + (buf[0] % 900000));
+			const exists = await accountService.selectByEmailIncludeDel(c, candidate + '@' + domain);
+			if (!exists) {
+				alias = candidate;
+				break;
+			}
+		}
+
+		if (!alias) {
+			throw new Error('no available alias number');
+		}
+
+		const aliasEmail = alias + '@' + domain;
+
+		await accountService.insert(c, { userId: userId, email: aliasEmail, name: alias });
+
+		return aliasEmail;
 	},
 
 	async reject(c, params, adminId) {
@@ -324,7 +363,7 @@ const applyService = {
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
 	},
 
-	async notify(c, applyRow, mode) {
+	async notify(c, applyRow, mode, aliasEmail) {
 
 		if (!applyRow) {
 			return;
@@ -352,6 +391,7 @@ const applyService = {
 				headMap[mode] || '邮箱申请状态更新',
 				['申请人：', who].join(''),
 				['期望地址：', applyRow.email].join(''),
+				aliasEmail ? ['低调别名：', aliasEmail].join('') : '',
 				reasonPart
 			];
 
