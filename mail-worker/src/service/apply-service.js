@@ -116,7 +116,8 @@ const applyService = {
 			status: applyConst.status.PENDING
 		}).returning().get();
 
-		const threshold = Number(settingRow.applyAutoTrustLevel) || 0;
+		// 兼容尚未重跑 /api/init 的实例：设置缓存里还没有该字段时按默认 3 处理
+		const threshold = settingRow.applyAutoTrustLevel == null ? 3 : (Number(settingRow.applyAutoTrustLevel) || 0);
 		const trustLevel = Number(oauthRow.trustLevel === null ? -1 : oauthRow.trustLevel);
 
 		if (threshold > 0 && trustLevel >= threshold) {

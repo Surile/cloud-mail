@@ -308,6 +308,37 @@ onUnmounted(stopPoll)
     margin-bottom: 16px;
   }
 
+  :deep(.el-input__wrapper) {
+    border-radius: 6px;
+    background: var(--el-bg-color);
+  }
+
+  .prefix-input :deep(.el-input__wrapper) {
+    border-radius: 6px 0 0 6px;
+  }
+
+  :deep(.el-input-group__append) {
+    padding: 0 !important;
+    padding-left: 8px !important;
+    padding-right: 4px !important;
+    background: var(--el-bg-color);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .setting-icon {
+    position: relative;
+    top: 6px;
+  }
+
+  .select {
+    position: absolute;
+    right: 30px;
+    width: 100px;
+    opacity: 0;
+    pointer-events: none;
+    visibility: hidden;
+  }
+
   :deep(.el-textarea) {
     margin-bottom: 16px;
   }
