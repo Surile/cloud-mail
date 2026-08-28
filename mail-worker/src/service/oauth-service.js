@@ -6,7 +6,7 @@ import { and, eq, inArray, notInArray } from 'drizzle-orm';
 import userService from "./user-service";
 import loginService from "./login-service";
 import cryptoUtils from "../utils/crypto-utils";
-import settingService from "./setting-service";
+import settingEntity from "../entity/setting";
 import applyService from "./apply-service";
 import { applyConst } from '../const/entity-const';
 import {t} from '../i18n/i18n';
@@ -35,11 +35,9 @@ const oauthService = {
 		return { userInfo: oauthRow, token: jwtToken}
 	},
 
-	async linuxDoLogin(c, params) {
+	async fetchLinuxDoUser(c, code, redirectUri) {
 
-		const { code, redirectUri } = params;
-
-		const setting = await settingService.query(c);
+		const setting = await orm(c).select().from(settingEntity).get();
 		this.assertEnabled(setting, 'linuxdoSwitch');
 
 		const reqParams = new URLSearchParams()
@@ -80,14 +78,17 @@ const oauthService = {
 		userInfo.avatar = userInfo.avatar_url;
 		userInfo.platform = 'linuxdo';
 
+		return userInfo
+	},
+
+	async linuxDoLogin(c, params) {
+		const userInfo = await this.fetchLinuxDoUser(c, params.code, params.redirectUri);
 		return await this.saveAndLogin(c, userInfo)
 	},
 
-	async githubLogin(c, params) {
+	async fetchGithubUser(c, code, redirectUri) {
 
-		const { code, redirectUri } = params;
-
-		const setting = await settingService.query(c);
+		const setting = await orm(c).select().from(settingEntity).get();
 		this.assertEnabled(setting, 'githubSwitch');
 
 		const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
@@ -132,14 +133,17 @@ const oauthService = {
 		userInfo.avatar = userInfo.avatar_url;
 		userInfo.platform = 'github';
 
+		return userInfo
+	},
+
+	async githubLogin(c, params) {
+		const userInfo = await this.fetchGithubUser(c, params.code, params.redirectUri);
 		return await this.saveAndLogin(c, userInfo);
 	},
 
-	async googleLogin(c, params) {
+	async fetchGoogleUser(c, code, redirectUri) {
 
-		const { code, redirectUri } = params;
-
-		const setting = await settingService.query(c);
+		const setting = await orm(c).select().from(settingEntity).get();
 		this.assertEnabled(setting, 'googleSwitch');
 
 		const reqParams = new URLSearchParams()
@@ -179,6 +183,11 @@ const oauthService = {
 		userInfo.avatar = userInfo.picture;
 		userInfo.platform = 'google';
 
+		return userInfo
+	},
+
+	async googleLogin(c, params) {
+		const userInfo = await this.fetchGoogleUser(c, params.code, params.redirectUri);
 		return await this.saveAndLogin(c, userInfo);
 	},
 
@@ -194,6 +203,66 @@ const oauthService = {
 
 		const JwtToken = await loginService.login(c, { email: userRow.email, password: null }, true);
 		return { userInfo: oauthRow, token: JwtToken };
+	},
+
+	// 登录与"追加绑定"共用的平台取用户流程（含该平台开关校验）
+	async fetchPlatformUser(c, platform, code, redirectUri) {
+		switch (platform) {
+			case 'linuxdo':
+				return await this.fetchLinuxDoUser(c, code, redirectUri);
+			case 'github':
+				return await this.fetchGithubUser(c, code, redirectUri);
+			case 'google':
+				return await this.fetchGoogleUser(c, code, redirectUri);
+			default:
+				throw new BizError(t('oauthDisabled'));
+		}
+	},
+
+	// 软着陆：已登录用户把新的三方身份绑定到当前账号（bindUser 是"注册新邮箱+绑定"，覆盖不了存量账密用户）
+	async bindIdentity(c, params, userId) {
+
+		const { platform, code, redirectUri } = params;
+		const userInfo = await this.fetchPlatformUser(c, platform, code, redirectUri);
+
+		const existing = await this.getById(c, userInfo.oauthUserId);
+
+		if (existing && existing.userId === userId) {
+			throw new BizError(t('oauthBindDuplicate'));
+		}
+
+		if (existing && existing.userId !== 0) {
+			throw new BizError(t('oauthBindOccupied'));
+		}
+
+		return await this.saveUser(c, { ...userInfo, userId });
+	},
+
+	async listByUserId(c, userId) {
+		return await orm(c).select({
+			oauthUserId: oauth.oauthUserId,
+			platform: oauth.platform,
+			username: oauth.username,
+			name: oauth.name,
+			avatar: oauth.avatar,
+			createTime: oauth.createTime
+		}).from(oauth).where(eq(oauth.userId, userId)).all();
+	},
+
+	// 解绑保护：至少保留一种登录方式，避免撤掉账密入口后该账号无门可进
+	async unbind(c, params, userId) {
+
+		const rows = await orm(c).select({ oid: oauth.oauthUserId }).from(oauth).where(eq(oauth.userId, userId)).all();
+
+		if (!rows.some(row => String(row.oid) === String(params.oauthUserId))) {
+			throw new BizError(t('oauthUnbindNotOwned'));
+		}
+
+		if (rows.length <= 1) {
+			throw new BizError(t('oauthUnbindLastDenied'));
+		}
+
+		await orm(c).delete(oauth).where(and(eq(oauth.oauthUserId, params.oauthUserId), eq(oauth.userId, userId))).run();
 	},
 
 	async saveUser(c, userInfo) {

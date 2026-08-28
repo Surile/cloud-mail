@@ -79,6 +79,7 @@
           <div class="delete-ratio">
             <div>{{ $t('active') }} <span class="normal">{{ numberCount.normalUserTotal }}</span></div>
             <div>{{ $t('deleted') }} <span class="deleted">{{ numberCount.delUserTotal }}</span></div>
+            <div>{{ $t('noOauthUserTotal') }} <span class="deleted">{{ numberCount.noOauthUserTotal }}</span></div>
           </div>
         </div>
       </div>
@@ -150,6 +151,7 @@ const numberCount = reactive({
   normalSendTotal: 0,
   normalAccountTotal: 0,
   normalUserTotal: 0,
+  noOauthUserTotal: 0,
   delReceiveTotal: 0,
   delSendTotal: 0,
   delAccountTotal: 0,
@@ -219,6 +221,7 @@ onMounted(() => {
     numberCount.normalSendTotal = data.numberCount.normalSendTotal
     numberCount.normalAccountTotal = data.numberCount.normalAccountTotal
     numberCount.normalUserTotal = data.numberCount.normalUserTotal
+    numberCount.noOauthUserTotal = data.numberCount.noOauthUserTotal || 0
     numberCount.delReceiveTotal = data.numberCount.delReceiveTotal
     numberCount.delSendTotal = data.numberCount.delSendTotal
     numberCount.delAccountTotal = data.numberCount.delAccountTotal

@@ -11,6 +11,7 @@ const analysisDao = {
 				COALESCE(u.userTotal, 0) AS userTotal,
 				COALESCE(u.normalUserTotal, 0) AS normalUserTotal,
 				COALESCE(u.delUserTotal, 0) AS delUserTotal,
+				COALESCE(u.noOauthUserTotal, 0) AS noOauthUserTotal,
 				COALESCE(a.accountTotal, 0) AS accountTotal,
 				COALESCE(a.normalAccountTotal, 0) AS normalAccountTotal,
 				COALESCE(a.delAccountTotal, 0) AS delAccountTotal
@@ -27,12 +28,13 @@ const analysisDao = {
                         email
                 ) e
             CROSS JOIN (
-                SELECT
-                    COUNT(*) AS userTotal,
-                    SUM(CASE WHEN is_del = 1 THEN 1 ELSE 0 END) AS delUserTotal,
-                    SUM(CASE WHEN is_del = 0 THEN 1 ELSE 0 END) AS normalUserTotal
-                FROM
-                    user
+	            SELECT
+	                    COUNT(*) AS userTotal,
+	                    SUM(CASE WHEN is_del = 1 THEN 1 ELSE 0 END) AS delUserTotal,
+	                    SUM(CASE WHEN is_del = 0 THEN 1 ELSE 0 END) AS normalUserTotal,
+	                    SUM(CASE WHEN is_del = 0 AND NOT EXISTS (SELECT 1 FROM oauth o WHERE o.user_id = user.user_id) THEN 1 ELSE 0 END) AS noOauthUserTotal
+	                FROM
+	                    user
             ) u
             CROSS JOIN (
                 SELECT

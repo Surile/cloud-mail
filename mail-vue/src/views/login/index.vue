@@ -167,7 +167,7 @@ import {useUserStore} from "@/store/user.js";
 import {useUiStore} from "@/store/ui.js";
 import {Icon} from "@iconify/vue";
 import {cvtR2Url} from "@/utils/convert.js";
-import {loginUserInfo} from "@/request/my.js";
+import {loginUserInfo, myOauthBind} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import {useI18n} from "vue-i18n";
 import {oauthBindUser, oauthLinuxDoLogin, oauthGithubLogin, oauthGoogleLogin} from "@/request/ouath.js";
@@ -312,6 +312,22 @@ async function oauthGetUser() {
   oauthLoading.value = true
   sessionStorage.removeItem('oauthProvider')
   window.history.replaceState({}, '', window.location.origin + window.location.pathname)
+
+  // 已登录用户的追加绑定：走 /my/oauthBind，不带登录端点的建号/登录副作用
+  if (sessionStorage.getItem('oauthNext') === 'bind') {
+    sessionStorage.removeItem('oauthNext')
+    myOauthBind(provider, code, window.location.origin + '/login').then(() => {
+      ElMessage({
+        message: t('oauthBindSuccess'),
+        type: 'success',
+        plain: true,
+      })
+      router.push('/setting')
+    }).catch(() => {
+      oauthLoading.value = false
+    })
+    return
+  }
 
   loginFns[provider](code, window.location.origin + '/login').then(data => {
 
