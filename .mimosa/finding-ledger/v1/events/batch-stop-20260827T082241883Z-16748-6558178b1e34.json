@@ -1,0 +1,61 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260827T082241883Z-16748-6558178b1e34",
+  "runId": "20260827T082241883Z-16748-6558178b1e34",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "a80b3a1ff8db5fe1810a7451910e43a3c4b926dd",
+  "diffHash": "a9d453011c28efb347bab124df995b99c636d608ba8ecb2aa9590be07cd089fe",
+  "rulesVersion": "unavailable",
+  "sessionHash": "fdc4974aa312177adf7307426d0a1644d362e894c6f846fd8cebddab313f6d25",
+  "reportRef": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260827T082241883Z-16748-6558178b1e34.json",
+  "events": [],
+  "observedFindingIds": [
+    "mimosa-0b4f666a119abafec5293f01",
+    "mimosa-27e1be26f8d5963dfd950e82",
+    "mimosa-4dd29d8d0c7264de2b4876b6",
+    "mimosa-a19428a2907a2b24397081a2",
+    "mimosa-2527d09bfd00e9812fa118db",
+    "mimosa-6abbc5ffdb7059cb22793f37"
+  ],
+  "verifiedFiles": [
+    {
+      "file": "mail-worker/src/entity/apply.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/init/init.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/service/apply-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/service/user-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/zh.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/en.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-08-27T08:22:42.135Z"
+}

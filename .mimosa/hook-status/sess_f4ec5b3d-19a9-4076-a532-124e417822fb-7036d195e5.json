@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "mimosa-hook-status/v1",
+  "recordedAt": "2026-08-27T12:03:19.637Z",
+  "sessionId": "sess_f4ec5b3d-19a9-4076-a532-124e417822fb",
+  "event": "PostToolUse",
+  "toolName": "Edit",
+  "file": "mail-vue/src/views/sys-setting/index.vue",
+  "outcome": "clear",
+  "coverage": "complete",
+  "findingCount": 0,
+  "durationMs": 2,
+  "hostState": "hook_complete",
+  "reportHint": ".mimosa/reports/"
+}

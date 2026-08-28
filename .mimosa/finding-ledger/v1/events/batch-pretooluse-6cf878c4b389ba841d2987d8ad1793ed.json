@@ -1,0 +1,48 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "pretooluse-6cf878c4b389ba841d2987d8ad1793ed",
+  "runId": null,
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "PreToolUse"
+  },
+  "revision": null,
+  "diffHash": null,
+  "rulesVersion": null,
+  "sessionHash": "fdc4974aa312177adf7307426d0a1644d362e894c6f846fd8cebddab313f6d25",
+  "reportRef": null,
+  "events": [
+    {
+      "eventId": "hook-80e5d0d26b76528157a05ed371762175",
+      "findingId": "mimosa-8933838ea7d24e8195093829",
+      "type": "finding_blocked",
+      "at": "2026-08-27T06:13:53.501Z",
+      "identity": {
+        "projectRelativeFile": "mail-worker/src/service/telegram-service.js",
+        "ruleId": "security",
+        "codeEvidenceHash": "0fbf9a4d73aa94518a6756707603915bc3c2da7e46af9a599d0bab1a1393cdff",
+        "confidence": "stable"
+      },
+      "scope": "direct",
+      "line": 101,
+      "endLine": 101,
+      "reasonCode": "deny",
+      "reportedToAgent": true,
+      "evidence": {
+        "kind": "source",
+        "boundary": "candidate",
+        "producer": "deterministic",
+        "evidenceHash": "0fbf9a4d73aa94518a6756707603915bc3c2da7e46af9a599d0bab1a1393cdff"
+      },
+      "sequence": 0
+    }
+  ],
+  "observedFindingIds": [],
+  "verifiedFiles": [],
+  "recordedAt": "2026-08-27T06:13:53.708Z"
+}

@@ -1,0 +1,216 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260827T120352168Z-20620-41c98758004b",
+  "runId": "20260827T120352168Z-20620-41c98758004b",
+  "runStatus": "inconclusive",
+  "coverage": {
+    "status": "partial",
+    "reasons": [
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-insertion-facade.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-loader.entry.ts",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-insertion-facade.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-loader.entry.ts",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "deterministic_scanner_unavailable",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "file_skipped",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "文件过大（3413KB），已跳过未扫描",
+        "affectsCompletion": true
+      },
+      {
+        "code": "deterministic_scanner_unavailable",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "file_skipped",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "文件过大（3413KB），已跳过未扫描",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-insertion-facade.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-loader.entry.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-insertion-facade.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-loader.entry.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "deterministic_scanner_unavailable: deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-nLeonA/index.js",
+        "detail": "file_skipped: 文件过大（3413KB），已跳过未扫描",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "deterministic_scanner_unavailable: deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-n3ebRH/index.js",
+        "detail": "file_skipped: 文件过大（3413KB），已跳过未扫描",
+        "affectsCompletion": true
+      }
+    ]
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "3cb4e733c1cef0e250dc260b718bdd4c4257361d",
+  "diffHash": "e96d092812c51b9ede5fa49ef23412af8369cdcde26eb685d5e9aca2dc7ad5da",
+  "rulesVersion": "unavailable",
+  "sessionHash": "7036d195e569ff8738f176262cbb9e8cc0fa07c3d7d2922902e506c78eeff3bf",
+  "reportRef": ".mimosa/reports/task-review-sess_f4ec5b3d-19a9-4076-a532-124e417822fb-20260827T120352168Z-20620-41c98758004b.json",
+  "events": [],
+  "observedFindingIds": [
+    "mimosa-27e1be26f8d5963dfd950e82",
+    "mimosa-4dd29d8d0c7264de2b4876b6",
+    "mimosa-a19428a2907a2b24397081a2",
+    "mimosa-2527d09bfd00e9812fa118db",
+    "mimosa-6abbc5ffdb7059cb22793f37"
+  ],
+  "verifiedFiles": [
+    {
+      "file": "mail-worker/src/index.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/service/apply-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-insertion-facade.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-svtNfS/middleware-loader.entry.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-insertion-facade.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-RYi2X8/middleware-loader.entry.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/request/apply.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/en.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/zh.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-08-27T12:03:52.418Z"
+}

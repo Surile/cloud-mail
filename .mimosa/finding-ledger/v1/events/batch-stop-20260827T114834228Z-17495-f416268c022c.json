@@ -1,0 +1,45 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260827T114834228Z-17495-f416268c022c",
+  "runId": "20260827T114834228Z-17495-f416268c022c",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "875841cd961d27e16d3b541a298129a0e4392ad8",
+  "diffHash": "88f09aa5b7c9a3ffe6df8478d251256499cb132edbdb9f9bc60216d119c71990",
+  "rulesVersion": "unavailable",
+  "sessionHash": "fdc4974aa312177adf7307426d0a1644d362e894c6f846fd8cebddab313f6d25",
+  "reportRef": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260827T114834228Z-17495-f416268c022c.json",
+  "events": [],
+  "observedFindingIds": [
+    "mimosa-27e1be26f8d5963dfd950e82",
+    "mimosa-4dd29d8d0c7264de2b4876b6",
+    "mimosa-a19428a2907a2b24397081a2",
+    "mimosa-2527d09bfd00e9812fa118db",
+    "mimosa-6abbc5ffdb7059cb22793f37"
+  ],
+  "verifiedFiles": [
+    {
+      "file": "mail-worker/src/service/apply-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/zh.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/en.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-08-27T11:48:34.489Z"
+}

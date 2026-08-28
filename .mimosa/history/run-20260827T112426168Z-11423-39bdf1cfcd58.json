@@ -1,0 +1,41 @@
+{
+  "schemaVersion": "mimosa-finding-history/v1",
+  "runId": "20260827T112426168Z-11423-39bdf1cfcd58",
+  "runStatus": "inconclusive",
+  "errors": [
+    "scan:mail-worker/.wrangler/tmp/dev-ACQt3k/index.js: deterministic_scanner_unavailable: deterministic scanner unavailable",
+    "scan:mail-worker/.wrangler/tmp/dev-ACQt3k/index.js: file_skipped: 文件过大（3411KB），已跳过未扫描"
+  ],
+  "target": ".",
+  "revision": "09f229c93089a0da39cbdd74a57125d08e7b11b2",
+  "diffHash": "d9a4ae8de64959c82a05446a48c87aa066b2ac5201b77db327bfe15200b7ae71",
+  "rulesVersion": "unavailable",
+  "recordedAt": "2026-08-27T11:24:26.168Z",
+  "timing": {
+    "startedAt": "2026-08-27T11:24:25.447Z",
+    "completedAt": "2026-08-27T11:24:26.168Z",
+    "durationMs": 721
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "modelCalls": 0,
+    "measurement": "known-zero"
+  },
+  "findings": {
+    "total": 0,
+    "bySeverity": {},
+    "byStatus": {}
+  },
+  "coverage": {
+    "status": "partial",
+    "reasonCounts": {
+      "deterministic_scanner_unavailable": 1,
+      "file_skipped": 1,
+      "project_check_failed": 2
+    }
+  },
+  "evidenceBoundary": "static_only",
+  "immutableReport": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260827T112426168Z-11423-39bdf1cfcd58.json"
+}

@@ -1,0 +1,210 @@
+{
+  "schema_version": "mimosa-task-review/v2",
+  "run_id": "20260828T021332714Z-73741-c21bad99bd72",
+  "run_status": "completed",
+  "errors": [],
+  "coverage": {
+    "schema_version": "mimosa-hook-coverage/v1",
+    "status": "complete",
+    "scope": "hook_observed_diff",
+    "baseline": {
+      "complete": true,
+      "captured_files": 207,
+      "candidate_limit": 5000,
+      "truncated": false,
+      "enumeration_error_count": 0,
+      "snapshot_error_count": 0,
+      "compensated_target_count": 8
+    },
+    "change_tracking": {
+      "touched_observed": 7,
+      "touched_retained": 7,
+      "truncated": false,
+      "bash_mutation": true,
+      "bash_discovered": 8,
+      "bash_discovery_limit": 80,
+      "bash_discovery_truncated": false
+    },
+    "candidates": {
+      "eligible_files": 8,
+      "selected_files": 8,
+      "limit": 20,
+      "truncated": false
+    },
+    "scanning": {
+      "required_files": 8,
+      "scanned_files": 8,
+      "skipped_files": 0,
+      "failed_files": 0,
+      "project_checks_required": 0,
+      "project_checks_completed": 0
+    },
+    "notification": {
+      "eligible_findings": 0,
+      "detailed_findings": 0,
+      "detail_limit": 3,
+      "truncated": false
+    },
+    "reason_counts": {},
+    "reasons": [],
+    "reasons_truncated": false
+  },
+  "generated_at": "2026-08-28T02:13:32.714Z",
+  "session_id": "sess_fa27a425-3529-495b-aed5-2b739a8c4a37",
+  "target": ".",
+  "revision": "878309191e58d2a8213ac96744a974695831e6dd",
+  "rules_version": "unavailable",
+  "diff_hash": "44adf6d9d77d2670768a8639edfc60e23c6701019d71f989b8ef9894e380cbbd",
+  "diff": {
+    "algorithm": "sha256",
+    "changed_file_count": 8,
+    "changed_files": [
+      {
+        "file": "mail-vue/src/i18n/en.js",
+        "ranges": [
+          {
+            "start": 406,
+            "end": 409
+          }
+        ],
+        "before_hash": "4b9d9c72bb5a4458cfb0f5c5687a35ca69e4aadc78be66efebc13a0e70d03e41",
+        "after_hash": "89b61fa6da9c123432709bfed097dfb5d952dab4fb138e15bd7f1ac72a7fa82f"
+      },
+      {
+        "file": "mail-vue/src/i18n/zh.js",
+        "ranges": [
+          {
+            "start": 406,
+            "end": 409
+          }
+        ],
+        "before_hash": "6aaa26a607d56f94ac69dd19f2a4f29e3fbb5ca23c7269fc42796a2087cea6dc",
+        "after_hash": "5709b04bca2baf2d24dcdf3d9f5959edf6f850f336eff4d947bdd62676523afd"
+      },
+      {
+        "file": "mail-vue/src/request/apply.js",
+        "ranges": [
+          {
+            "start": 24,
+            "end": 31
+          }
+        ],
+        "before_hash": "02212f6ba202a25638e2bb3b3f6859f0b3b8f8b21daad6b1ef4f4ad76e6bf151",
+        "after_hash": "cfc64a895b2418472d2acb4407d0319d4df968954d42a02f29b7965980401821"
+      },
+      {
+        "file": "mail-worker/src/api/apply-api.js",
+        "ranges": [
+          {
+            "start": 32,
+            "end": 33
+          },
+          {
+            "start": 37,
+            "end": 38
+          }
+        ],
+        "before_hash": "71c4df760353766230ee284fe2b8c15f7959e8334b415150cbac115242d8c8e0",
+        "after_hash": "1ba6fce77d90daf43bba576dfde70333ebb15a771177980bf5b4447bae21b572"
+      },
+      {
+        "file": "mail-worker/src/const/kv-const.js",
+        "ranges": [
+          {
+            "start": 6,
+            "end": 6
+          }
+        ],
+        "before_hash": "0da81a409740050dc1ad642773810add5e0d653e43f16fad4406eccbd7d61bc6",
+        "after_hash": "77dcecfbb6be5b8f82e25bc6468c0fe6c2158f29432c037a38c7bea3e3e43d8b"
+      },
+      {
+        "file": "mail-worker/src/index.js",
+        "ranges": [
+          {
+            "start": 9,
+            "end": 36
+          }
+        ],
+        "before_hash": "22345e461852d19e5842c42d793b4270586937785fe2a513d3b68564444bee83",
+        "after_hash": "7e8623b35c4779c6bf757607a2cc61a1d8a5c2742e9a9d2c589ae577e161fc09"
+      },
+      {
+        "file": "mail-worker/src/security/security.js",
+        "ranges": [
+          {
+            "start": 65,
+            "end": 66
+          },
+          {
+            "start": 96,
+            "end": 96
+          }
+        ],
+        "before_hash": "da34a63b53e252b9c052eb30407f5537b28a916033a1887f571a16ec2c4d10e6",
+        "after_hash": "a455e3b14a8e73377e0f38824bc378477aefef1977bc6f7581950dda8e6af04c"
+      },
+      {
+        "file": "mail-worker/src/service/apply-service.js",
+        "ranges": [
+          {
+            "start": 417,
+            "end": 465
+          }
+        ],
+        "before_hash": "b511792b17a3a609ddbdcceac7ffcfa177e3d1bb814e3b500c4c595a4ac7d62d",
+        "after_hash": "0170c0bc54f8d4b098a2c5a0d77a4be309e72bed7ac013f833810f2c84009eb8"
+      }
+    ]
+  },
+  "timing": {
+    "started_at": "2026-08-28T02:13:31.829Z",
+    "completed_at": "2026-08-28T02:13:32.714Z",
+    "duration_ms": 885,
+    "measurement": "hook_wall_clock"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "model_calls": 0,
+    "measurement": "known-zero"
+  },
+  "telemetry": {
+    "schemaVersion": "mimosa-gate-telemetry/v1",
+    "profile": "gate",
+    "operation": "Stop",
+    "outcome": "complete",
+    "latencyMs": 885,
+    "peakMemoryBytes": 195100672,
+    "memoryMeasurement": "max-observed-process-rss",
+    "scannedFiles": 8,
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "measurement": "not-applicable"
+    },
+    "denyCount": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "total": 0,
+      "modelCalls": 0,
+      "measurement": "known-zero"
+    }
+  },
+  "finding_count": 0,
+  "rewake_finding_count": 0,
+  "evidence_boundary": {
+    "scan": "candidate",
+    "static_fix_verification": "observed_static_only",
+    "runtime_verification": "not_performed"
+  },
+  "finding_events": [],
+  "findings": [],
+  "artifacts": {
+    "immutable_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260828T021332714Z-73741-c21bad99bd72.json",
+    "latest_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37.json",
+    "history_summary": ".mimosa/history/run-20260828T021332714Z-73741-c21bad99bd72.json"
+  }
+}

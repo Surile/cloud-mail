@@ -1,0 +1,154 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260828T023616428Z-78129-99a063df31e2",
+  "runId": "20260828T023616428Z-78129-99a063df31e2",
+  "runStatus": "inconclusive",
+  "coverage": {
+    "status": "partial",
+    "reasons": [
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+        "detail": "file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "deterministic_scanner_unavailable",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "file_skipped",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "文件过大（3409KB），已跳过未扫描",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "deterministic_scanner_unavailable: deterministic scanner unavailable",
+        "affectsCompletion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "file_skipped: 文件过大（3409KB），已跳过未扫描",
+        "affectsCompletion": true
+      }
+    ]
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "0edd671b0eb6cd3729ed110dfd0156b267c39239",
+  "diffHash": "a2e90b6e8d62dd35b0f04562c76dda2b15399f49a96f33acb2ea9320becdd8bd",
+  "rulesVersion": "unavailable",
+  "sessionHash": "fdc4974aa312177adf7307426d0a1644d362e894c6f846fd8cebddab313f6d25",
+  "reportRef": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260828T023616428Z-78129-99a063df31e2.json",
+  "events": [],
+  "observedFindingIds": [
+    "mimosa-2e0e7f756e653f0af2f5adfe",
+    "mimosa-cd7ee57e5e0a8efabebaf479",
+    "mimosa-5fd1ec8c253a29676fbc2b85",
+    "mimosa-27e1be26f8d5963dfd950e82",
+    "mimosa-4dd29d8d0c7264de2b4876b6",
+    "mimosa-a19428a2907a2b24397081a2",
+    "mimosa-2527d09bfd00e9812fa118db",
+    "mimosa-6abbc5ffdb7059cb22793f37"
+  ],
+  "verifiedFiles": [
+    {
+      "file": "mail-worker/src/service/apply-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/service/setting-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/init/init.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/i18n/en.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/i18n/zh.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/src/entity/setting.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/en.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    },
+    {
+      "file": "mail-vue/src/i18n/zh.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-08-28T02:36:16.683Z"
+}

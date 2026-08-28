@@ -1,0 +1,341 @@
+{
+  "schema_version": "mimosa-task-review/v2",
+  "run_id": "20260828T023616428Z-78129-99a063df31e2",
+  "run_status": "inconclusive",
+  "errors": [
+    {
+      "stage": "baseline-read",
+      "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "baseline-read",
+      "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+      "reason": "baseline_snapshot_unreadable: file is missing from task baseline"
+    },
+    {
+      "stage": "scan",
+      "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+      "reason": "deterministic_scanner_unavailable: deterministic scanner unavailable"
+    },
+    {
+      "stage": "scan",
+      "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+      "reason": "file_skipped: 文件过大（3409KB），已跳过未扫描"
+    }
+  ],
+  "coverage": {
+    "schema_version": "mimosa-hook-coverage/v1",
+    "status": "partial",
+    "scope": "hook_observed_diff",
+    "baseline": {
+      "complete": true,
+      "captured_files": 205,
+      "candidate_limit": 5000,
+      "truncated": false,
+      "enumeration_error_count": 0,
+      "snapshot_error_count": 0,
+      "compensated_target_count": 8
+    },
+    "change_tracking": {
+      "touched_observed": 0,
+      "touched_retained": 0,
+      "truncated": false,
+      "bash_mutation": true,
+      "bash_discovered": 11,
+      "bash_discovery_limit": 80,
+      "bash_discovery_truncated": false
+    },
+    "candidates": {
+      "eligible_files": 11,
+      "selected_files": 11,
+      "limit": 20,
+      "truncated": false
+    },
+    "scanning": {
+      "required_files": 11,
+      "scanned_files": 10,
+      "skipped_files": 1,
+      "failed_files": 0,
+      "project_checks_required": 0,
+      "project_checks_completed": 0
+    },
+    "notification": {
+      "eligible_findings": 0,
+      "detailed_findings": 0,
+      "detail_limit": 3,
+      "truncated": false
+    },
+    "reason_counts": {
+      "baseline_snapshot_unreadable": 3,
+      "deterministic_scanner_unavailable": 1,
+      "file_skipped": 1,
+      "project_check_failed": 5
+    },
+    "reasons": [
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "baseline_snapshot_unreadable",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+        "detail": "file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "deterministic_scanner_unavailable",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "deterministic scanner unavailable",
+        "affects_completion": true
+      },
+      {
+        "code": "file_skipped",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "文件过大（3409KB），已跳过未扫描",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "baseline-read",
+        "target": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+        "detail": "baseline_snapshot_unreadable: file is missing from task baseline",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "deterministic_scanner_unavailable: deterministic scanner unavailable",
+        "affects_completion": true
+      },
+      {
+        "code": "project_check_failed",
+        "stage": "scan",
+        "target": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "detail": "file_skipped: 文件过大（3409KB），已跳过未扫描",
+        "affects_completion": true
+      }
+    ],
+    "reasons_truncated": false
+  },
+  "generated_at": "2026-08-28T02:36:16.428Z",
+  "session_id": "sess_fa27a425-3529-495b-aed5-2b739a8c4a37",
+  "target": ".",
+  "revision": "0edd671b0eb6cd3729ed110dfd0156b267c39239",
+  "rules_version": "unavailable",
+  "diff_hash": "a2e90b6e8d62dd35b0f04562c76dda2b15399f49a96f33acb2ea9320becdd8bd",
+  "diff": {
+    "algorithm": "sha256",
+    "changed_file_count": 11,
+    "changed_files": [
+      {
+        "file": "mail-vue/src/i18n/en.js",
+        "ranges": [
+          {
+            "start": 357,
+            "end": 360
+          }
+        ],
+        "before_hash": "89b61fa6da9c123432709bfed097dfb5d952dab4fb138e15bd7f1ac72a7fa82f",
+        "after_hash": "3020a3c924b74e4d96561fde2a3ead947a29c7c4e211df6c091aafc1398e99c4"
+      },
+      {
+        "file": "mail-vue/src/i18n/zh.js",
+        "ranges": [
+          {
+            "start": 357,
+            "end": 360
+          }
+        ],
+        "before_hash": "5709b04bca2baf2d24dcdf3d9f5959edf6f850f336eff4d947bdd62676523afd",
+        "after_hash": "3c8dafcdb2e70d3444eb1efe776fcf958786f2f374ba160dd31e4b7bdf7dc41d"
+      },
+      {
+        "file": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-insertion-facade.js",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 11
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "bfbd596483b79752ffc74c55cae79fb8c074cdc0bc698149e72e3b8f51c314ec"
+      },
+      {
+        "file": "mail-worker/.wrangler/tmp/bundle-0yt21w/middleware-loader.entry.ts",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 134
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "4baafe6f534b9d27bc9c4956867d5741c57bd09c9588bbd38ae0cd56baa9ece4"
+      },
+      {
+        "file": "mail-worker/.wrangler/tmp/dev-7O84h1/index.js",
+        "ranges": [
+          {
+            "start": 1,
+            "end": 83908
+          }
+        ],
+        "before_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "after_hash": "eeea976f20cfbe289a57a3381b385d349bbc4ce483b164f22a58bb4653e8159c"
+      },
+      {
+        "file": "mail-worker/src/entity/setting.js",
+        "ranges": [
+          {
+            "start": 71,
+            "end": 72
+          }
+        ],
+        "before_hash": "c599938851a2151779c4273d58072b1f74371aa77f908d06a2561f50d56fd83b",
+        "after_hash": "25febedf3ebc38a4dfde49af6fa5c1159778bfb29fcfccb10f528a36d6dfd846"
+      },
+      {
+        "file": "mail-worker/src/i18n/en.js",
+        "ranges": [
+          {
+            "start": 78,
+            "end": 78
+          }
+        ],
+        "before_hash": "bf04179dd0e1bd260eb40c7050720ddb2c6f2b0fc20c3762dfcde8ffa5919393",
+        "after_hash": "3d7b4ef9d08509ebf4ebbc2286ff11054e1c13daa2a5014d7aa80263691c4422"
+      },
+      {
+        "file": "mail-worker/src/i18n/zh.js",
+        "ranges": [
+          {
+            "start": 78,
+            "end": 78
+          }
+        ],
+        "before_hash": "6956f3e0c7858348a287e5e8d9634abcde2cbcf1ad8724a4b8f158c738f74cc5",
+        "after_hash": "2af6f283c9c8511d6e93d5534c6280b377a689acc2d534df3e95d253b087766d"
+      },
+      {
+        "file": "mail-worker/src/init/init.js",
+        "ranges": [
+          {
+            "start": 42,
+            "end": 42
+          },
+          {
+            "start": 47,
+            "end": 56
+          }
+        ],
+        "before_hash": "6f37e46a9db21d1b788aa61ee0f122eb7b33f3e88e2c697098a01e69126e06b1",
+        "after_hash": "92ccb7484f59f5e6c67c9070dc73974b5109cae2fea78e6b9da9e803025d97f4"
+      },
+      {
+        "file": "mail-worker/src/service/apply-service.js",
+        "ranges": [
+          {
+            "start": 68,
+            "end": 74
+          }
+        ],
+        "before_hash": "0170c0bc54f8d4b098a2c5a0d77a4be309e72bed7ac013f833810f2c84009eb8",
+        "after_hash": "fdb7b82051412ae37101e774e7cf025fe5220631b8d0a7af71ef938766d08910"
+      },
+      {
+        "file": "mail-worker/src/service/setting-service.js",
+        "ranges": [
+          {
+            "start": 218,
+            "end": 218
+          }
+        ],
+        "before_hash": "f1ebe489e0e3384cb773efe1580815e4c3080f99e8980370d4dd21a1182bc297",
+        "after_hash": "78ca403f381a25962ef24b104b53023c151c09ea400e93141af1625cd3ac426d"
+      }
+    ]
+  },
+  "timing": {
+    "started_at": "2026-08-28T02:36:15.422Z",
+    "completed_at": "2026-08-28T02:36:16.428Z",
+    "duration_ms": 1006,
+    "measurement": "hook_wall_clock"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "model_calls": 0,
+    "measurement": "known-zero"
+  },
+  "telemetry": {
+    "schemaVersion": "mimosa-gate-telemetry/v1",
+    "profile": "gate",
+    "operation": "Stop",
+    "outcome": "partial/INCONCLUSIVE",
+    "latencyMs": 1006,
+    "peakMemoryBytes": 204947456,
+    "memoryMeasurement": "max-observed-process-rss",
+    "scannedFiles": 10,
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "measurement": "not-applicable"
+    },
+    "denyCount": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "total": 0,
+      "modelCalls": 0,
+      "measurement": "known-zero"
+    }
+  },
+  "finding_count": 0,
+  "rewake_finding_count": 0,
+  "evidence_boundary": {
+    "scan": "candidate",
+    "static_fix_verification": "observed_static_only",
+    "runtime_verification": "not_performed"
+  },
+  "finding_events": [],
+  "findings": [],
+  "artifacts": {
+    "immutable_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260828T023616428Z-78129-99a063df31e2.json",
+    "latest_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37.json",
+    "history_summary": ".mimosa/history/run-20260828T023616428Z-78129-99a063df31e2.json"
+  }
+}

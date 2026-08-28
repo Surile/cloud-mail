@@ -1,0 +1,29 @@
+{
+  "schemaVersion": "mimosa-finding-ledger-batch/v1",
+  "batchId": "stop-20260827T074741525Z-98114-343cb1d6443e",
+  "runId": "20260827T074741525Z-98114-343cb1d6443e",
+  "runStatus": "completed",
+  "coverage": {
+    "status": "complete",
+    "reasons": []
+  },
+  "source": {
+    "component": "zcode-hook",
+    "operationId": "Stop"
+  },
+  "revision": "bfb2e598cfca0e282208022243a520a9425994ab",
+  "diffHash": "857bd51726c384c346144b1733395134746fd1b3abbc393256ca217e6d502e8b",
+  "rulesVersion": "unavailable",
+  "sessionHash": "fdc4974aa312177adf7307426d0a1644d362e894c6f846fd8cebddab313f6d25",
+  "reportRef": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260827T074741525Z-98114-343cb1d6443e.json",
+  "events": [],
+  "observedFindingIds": [],
+  "verifiedFiles": [
+    {
+      "file": "mail-worker/src/service/apply-service.js",
+      "direct": "complete",
+      "projectContext": "partial"
+    }
+  ],
+  "recordedAt": "2026-08-27T07:47:41.785Z"
+}

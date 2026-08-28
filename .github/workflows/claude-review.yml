@@ -1,0 +1,37 @@
+name: 🤖 AI Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🤖 Claude Code Review (GLM)
+        uses: anthropics/claude-code-action@v1
+        env:
+          ANTHROPIC_BASE_URL: https://open.bigmodel.cn/api/anthropic
+          ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZHIPU_API_KEY }}
+          ANTHROPIC_MODEL: glm-5.3
+        with:
+          claude_args: |
+            --model glm-5.3 --max-turns 40
+          prompt: |
+            请以资深代码评审员身份 review 这个 PR 的全部改动，用中文输出评审意见：
+            - 重点：安全漏洞（SQL 注入、XSS、密钥泄露、越权）、逻辑错误、边界条件、并发问题
+            - 其次：性能问题、与项目现有模式不一致的地方、明显的可维护性问题
+            - 每条意见标注严重程度：🔴 必须修 / 🟡 建议修改 / 🟢 可忽略
+            - 如果整体没有问题，明确输出"✅ 评审通过"并简述改动内容
+            只输出评审意见，不要修改任何代码。
+          timeout_minutes: "15"
