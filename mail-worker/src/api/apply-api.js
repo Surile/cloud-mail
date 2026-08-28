@@ -29,13 +29,13 @@ app.put('/apply/reject', async (c) => {
 	return c.json(result.ok());
 });
 
-app.post('/apply/batchReview', async (c) => {
-	const data = await applyService.batchReview(c);
+app.post('/apply/batchApprove', async (c) => {
+	const data = await applyService.batchApprove(c, await c.req.json(), userContext.getUserId(c));
 	return c.json(result.ok(data));
 });
 
-app.get('/apply/batchStatus', async (c) => {
-	const data = await applyService.batchStatus(c);
+app.post('/apply/batchReject', async (c) => {
+	const data = await applyService.batchReject(c, await c.req.json(), userContext.getUserId(c));
 	return c.json(result.ok(data));
 });
 

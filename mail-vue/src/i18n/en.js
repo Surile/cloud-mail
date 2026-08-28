@@ -354,6 +354,10 @@ const en = {
     notOwner: 'Base email does not belong to you',
     applyTitle: 'Apply for Email',
     applyEntry: 'Apply for one',
+    applyIntakeOpen: 'Application Intake',
+    applyIntakeOpenDesc: 'When off, no new applications can be submitted. Already-submitted ones are unaffected; reopening resumes intake.',
+    applyClosedTitle: 'Applications Closed',
+    applyClosedDesc: 'The application intake is closed for now. Watch the community announcements.',
     applyRegKeyOptional: 'Invite code (optional, waives review)',
     applyRegKeyCol: 'Code',
     applyGuideDesc: 'Sign in and submit an application. Once approved, you will get your own mailbox.',
@@ -403,12 +407,10 @@ const en = {
     zhipuModelPlaceholder: 'glm-4.7-flash',
     zhipuBaseUrlLabel: 'Zhipu Endpoint',
     zhipuBaseUrlDesc: 'Defaults to the standard open platform endpoint. GLM Coding Plan subscribers should set https://open.bigmodel.cn/api/coding/paas/v4 to use their subscription quota.',
-    batchReview: 'AI Batch Review',
-    batchReviewConfirm: 'Batch-review pending applications: invite codes and trust-threshold applicants are approved directly, the rest are judged by AI (via the Zhipu fallback). Keep this page open while it runs.',
-    batchRunningMsg: 'Batch review running: processed {processed} · approved {approved} · rejected {rejected} · manual {kept} · remaining {remaining}',
-    batchStarted: 'Started in the background: {queued} pending. You can leave this page — processing continues on the server.',
-    batchDoneSummary: 'Batch review finished: processed {processed}, approved {approved}, rejected {rejected}, manual {kept}',
-    batchDone: 'Batch review finished'
+    applyBatchApproveBtn: 'Batch Approve',
+    applyBatchRejectBtn: 'Batch Reject',
+    confirmBatchApproveMsg: 'Approve the selected {n} applications? Mailboxes will be created and bound immediately.',
+    batchResultMsg: 'Done: {ok} succeeded, {fail} failed'
 }
 
 export default en

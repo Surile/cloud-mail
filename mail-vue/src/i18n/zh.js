@@ -354,6 +354,10 @@ const zh = {
     notOwner: '基础邮箱不属于您',
     applyTitle: '申请邮箱',
     applyEntry: '申请开通',
+    applyIntakeOpen: '申请入口',
+    applyIntakeOpenDesc: '关闭后申请人无法提交新申请，已提交的不受影响；重新打开后恢复受理。',
+    applyClosedTitle: '申请暂未开放',
+    applyClosedDesc: '申请入口已关闭，请留意社区公告后再来。',
     applyRegKeyOptional: '注册码（选填，凭码免审开通）',
     applyRegKeyCol: '注册码',
     applyGuideDesc: '登录后提交邮箱开通申请，管理员审核通过即可获得专属邮箱。',
@@ -403,11 +407,9 @@ const zh = {
     zhipuModelPlaceholder: 'glm-4.7-flash',
     zhipuBaseUrlLabel: '智谱接口地址',
     zhipuBaseUrlDesc: '默认为开放平台标准地址。GLM Coding Plan 订阅用户请改为 https://open.bigmodel.cn/api/coding/paas/v4 以使用订阅额度。',
-    batchReview: 'AI 批量补审',
-    batchReviewConfirm: '将对待审核申请执行批量补审：注册码 / 达到信任阈值的按免审政策直接开通，其余交由 AI 判定（使用智谱兜底通道）。执行期间请勿关闭页面。',
-    batchRunningMsg: '批量补审进行中：已处理 {processed} 条 · 开通 {approved} · 驳回 {rejected} · 转人工 {kept} · 剩余 {remaining} 条',
-    batchStarted: '已在后台开始处理，共 {queued} 条待审。可以离开本页，处理由服务器继续进行。',
-    batchDoneSummary: '批量补审完成：共处理 {processed} 条，开通 {approved} 条，驳回 {rejected} 条，转人工 {kept} 条',
-    batchDone: '批量补审完成'
+    applyBatchApproveBtn: '批量通过',
+    applyBatchRejectBtn: '批量驳回',
+    confirmBatchApproveMsg: '确认通过所选 {n} 条申请？通过后将立即为申请人创建并绑定邮箱。',
+    batchResultMsg: '操作完成：成功 {ok} 条，失败 {fail} 条'
 }
 export default zh

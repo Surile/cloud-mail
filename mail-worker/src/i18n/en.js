@@ -75,6 +75,7 @@ const en = {
 	reasonTooShort: 'Reason must be at least 10 characters',
 	applyMinPrefix: 'Email prefix is too short',
 	applyIdentityFail: 'Login expired, please sign in again',
+	applyEntryClosed: 'Applications are closed for now',
 	perms: {
 		"邮件": "Emails",
 		"邮件发送": "Send Email",

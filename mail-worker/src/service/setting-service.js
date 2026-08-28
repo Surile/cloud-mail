@@ -215,6 +215,7 @@ const settingService = {
 			noticeOffset: settingRow.noticeOffset,
 			notice: settingRow.notice,
 			loginDomain: settingRow.loginDomain,
+			applyIntakeOpen: settingRow.applyIntakeOpen,
 			linuxdoClientId: settingRow.linuxdoClientId,
 			linuxdoSwitch: settingRow.linuxdoSwitch,
 			githubClientId: settingRow.githubClientId,

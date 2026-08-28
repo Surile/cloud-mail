@@ -65,6 +65,13 @@ const applyService = {
 			throw new BizError(t('oauthBound'));
 		}
 
+		const intakeSettingRow = await this.getSettingRow(c);
+
+		// 入口总开关：关闭时拒收新申请（已提交的不受影响）
+		if (!Number(intakeSettingRow.applyIntakeOpen)) {
+			throw new BizError(t('applyEntryClosed'));
+		}
+
 		if (!verifyUtils.isEmail(email)) {
 			throw new BizError(t('notEmail'));
 		}
@@ -207,163 +214,6 @@ const applyService = {
 			}
 			return false;
 		}
-	},
-
-	// 批量审核队列：点击即入队并立即返回，waitUntil 在后台消化（25 秒安全窗口），未完成部分由小时 cron / 审核页访问自动续跑；进度写入 KV 可随时查询
-	async batchReview(c) {
-
-		const totalRow = await orm(c).select({ total: count() }).from(apply)
-			.where(eq(apply.status, applyConst.status.PENDING)).get();
-
-		if (!totalRow.total) {
-			await c.env.kv.delete(KvConst.BATCH_REVIEW_FLAG);
-			await c.env.kv.delete(KvConst.BATCH_REVIEW_STATS);
-			return { queued: 0 };
-		}
-
-		await c.env.kv.put(KvConst.BATCH_REVIEW_FLAG, '1', { expirationTtl: 86400 });
-		await c.env.kv.put(KvConst.BATCH_REVIEW_STATS, JSON.stringify({
-			processed: 0, approved: 0, rejected: 0, kept: 0, remaining: totalRow.total
-		}));
-
-		if (c.executionCtx) {
-			c.executionCtx.waitUntil(this.drainQueue(c));
-		}
-
-		return { queued: totalRow.total };
-	},
-
-	async batchStatus(c) {
-		const running = (await c.env.kv.get(KvConst.BATCH_REVIEW_FLAG)) === '1';
-		const stats = await c.env.kv.get(KvConst.BATCH_REVIEW_STATS, { type: 'json' });
-		const pendingRow = await orm(c).select({ total: count() }).from(apply)
-			.where(eq(apply.status, applyConst.status.PENDING)).get();
-		return { running: running, stats: stats, pending: pendingRow.total };
-	},
-
-	// 小时 cron / 审核页访问发现队列未完成时自动续跑
-	async resumeBatchReview(c) {
-		if ((await c.env.kv.get(KvConst.BATCH_REVIEW_FLAG)) === '1') {
-			await this.drainQueue(c);
-		}
-	},
-
-	async drainQueue(c) {
-
-		const deadline = Date.now() + 25000;
-
-		while (Date.now() < deadline) {
-
-			if ((await c.env.kv.get(KvConst.BATCH_REVIEW_FLAG)) !== '1') {
-				break;
-			}
-
-			const stats = await this.processBatchChunk(c);
-
-			const acc = (await c.env.kv.get(KvConst.BATCH_REVIEW_STATS, { type: 'json' })) ||
-				{ processed: 0, approved: 0, rejected: 0, kept: 0 };
-
-			acc.processed += stats.processed;
-			acc.approved += stats.approved;
-			acc.rejected += stats.rejected;
-			acc.kept += stats.kept;
-			acc.remaining = stats.remaining;
-			acc.updatedAt = dayjs().format('YYYY-MM-DD HH:mm:ss');
-
-			await c.env.kv.put(KvConst.BATCH_REVIEW_STATS, JSON.stringify(acc));
-
-			// 本块没有任何开通/驳回（AI 双通道不可用等系统性原因）：停止队列避免空转，稍后可由 cron/再次点击续跑
-			if (stats.approved + stats.rejected === 0) {
-				await c.env.kv.delete(KvConst.BATCH_REVIEW_FLAG);
-				break;
-			}
-
-			if (stats.processed === 0 || stats.remaining === 0) {
-				await c.env.kv.delete(KvConst.BATCH_REVIEW_FLAG);
-				break;
-			}
-
-			// 让步间隔：避免高频 KV/D1 操作拖慢同实例的并发请求
-			await new Promise(resolve => setTimeout(resolve, 300));
-		}
-	},
-
-	async processBatchChunk(c) {
-
-		const settingRow = await this.getSettingRow(c);
-		const threshold = settingRow.applyAutoTrustLevel == null ? 3 : (Number(settingRow.applyAutoTrustLevel) || 0);
-		const useAi = Number(settingRow.applyAiReview) === 1;
-
-		const rows = await orm(c).select().from(apply)
-			.where(eq(apply.status, applyConst.status.PENDING))
-			.orderBy(
-				sql`CASE WHEN ${apply.trustLevel} IS NULL THEN -1 ELSE ${apply.trustLevel} END DESC`,
-				asc(apply.applyId)
-			)
-			.limit(20)
-			.all();
-
-		let approved = 0;
-		let rejected = 0;
-		let kept = 0;
-
-		for (const row of rows) {
-
-			const fast = (row.regCode && row.regCode.trim()) ||
-				(threshold > 0 && Number(row.trustLevel === null ? -1 : row.trustLevel) >= threshold);
-
-			// 与提交流程一致：AI 开启时免审通道同样要先过前缀人格化关，不过关直接驳回
-			if (useAi) {
-
-				const verdict = await aiService.reviewApplication(c, {
-					fastLane: fast,
-					prefix: emailUtils.getName(row.email),
-					platform: row.platform,
-					username: row.username,
-					trustLevel: row.trustLevel,
-					reason: row.reason
-				}, { key: settingRow.zhipuApiKey, model: settingRow.zhipuModel, baseUrl: settingRow.zhipuBaseUrl });
-
-				if (verdict && !verdict.prefixOk) {
-					await this.rejectByAi(c, row, verdict.reason);
-					rejected++;
-					continue;
-				}
-
-				if (verdict && fast) {
-					const ok = await this.approveWithFallback(c, row, 'auto', true);
-					ok ? approved++ : kept++;
-					continue;
-				}
-
-				if (!verdict || verdict.decision === 'review') {
-					kept++;
-					continue;
-				}
-
-				if (verdict.decision === 'reject') {
-					await this.rejectByAi(c, row, verdict.reason);
-					rejected++;
-					continue;
-				}
-
-				const ok = await this.approveWithFallback(c, row, 'ai-approved', true);
-				ok ? approved++ : kept++;
-				continue;
-			}
-
-			if (fast) {
-				const ok = await this.approveWithFallback(c, row, 'auto', true);
-				ok ? approved++ : kept++;
-			} else {
-				kept++;
-			}
-		}
-
-		const totalRow = await orm(c).select({ total: count() }).from(apply)
-			.where(eq(apply.status, applyConst.status.PENDING)).get();
-
-		return { processed: rows.length, approved, rejected, kept, remaining: totalRow.total };
 	},
 
 	async rejectByAi(c, applyRow, reason) {
@@ -569,6 +419,55 @@ const applyService = {
 			adminId: adminId,
 			updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
+	},
+
+	// 批量人工操作：逐条走完整的开通/驳回链路，单条失败不影响其他，返回失败明细
+	async batchApprove(c, params, adminId) {
+		return await this.runBatch(c, params.applyIds, adminId, 'approve', params.remark);
+	},
+
+	async batchReject(c, params, adminId) {
+		return await this.runBatch(c, params.applyIds, adminId, 'reject', params.remark);
+	},
+
+	async runBatch(c, applyIds, adminId, action, remark) {
+
+		const ids = (Array.isArray(applyIds) ? applyIds : []).map(Number).filter(Boolean).slice(0, 100);
+		const okIds = [];
+		const failed = [];
+
+		for (const applyId of ids) {
+
+			try {
+				const applyRow = await orm(c).select().from(apply).where(eq(apply.applyId, applyId)).get();
+
+				if (!applyRow) {
+					throw new BizError(t('applyNotFound'));
+				}
+
+				if (applyRow.status !== applyConst.status.PENDING) {
+					throw new BizError(t('applyProcessed'));
+				}
+
+				if (action === 'approve') {
+					await this.doApprove(c, applyRow, adminId);
+				} else {
+					const clean = String(remark || '').trim().slice(0, 200);
+					await orm(c).update(apply).set({
+						status: applyConst.status.REJECTED,
+						remark: clean,
+						adminId: adminId,
+						updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
+					}).where(eq(apply.applyId, applyRow.applyId)).run();
+				}
+
+				okIds.push(applyId);
+			} catch (e) {
+				failed.push({ applyId: applyId, message: e.message });
+			}
+		}
+
+		return { ok: okIds.length, okIds: okIds, failed: failed };
 	},
 
 	async notify(c, applyRow, mode) {

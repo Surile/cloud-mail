@@ -12,24 +12,22 @@
       </div>
       <Icon class="icon" icon="iconoir:search" width="20" height="20" @click="search"/>
       <Icon class="icon" icon="ion:reload" width="18" height="18" @click="refresh"/>
-      <el-tooltip effect="dark" :content="$t('batchReview')" placement="top">
-        <Icon class="icon" :class="batchRunning ? 'running' : ''" icon="fluent:bot-24-regular" width="20" height="20"
-              @click="batchReview"/>
-      </el-tooltip>
+      <el-button v-if="selectedRows.length" size="small" type="success" @click="batchApproveSel">
+        {{ $t('applyBatchApproveBtn') }}({{ selectedRows.length }})
+      </el-button>
+      <el-button v-if="selectedRows.length" size="small" type="danger" @click="openBatchReject">
+        {{ $t('applyBatchRejectBtn') }}({{ selectedRows.length }})
+      </el-button>
     </div>
-
-    <el-alert v-if="batchRunning" type="warning" :closable="false" class="batch-alert">
-      <template #title>
-        {{ $t('batchRunningMsg', {processed: batchProgress.processed, approved: batchProgress.approved, rejected: batchProgress.rejected, kept: batchProgress.kept, remaining: batchProgress.remaining}) }}
-      </template>
-    </el-alert>
 
     <el-scrollbar class="scrollbar">
       <div class="loading" :class="listLoading ? 'loading-show' : 'loading-hide'" :style="first ? 'background: transparent' : ''">
         <loading/>
       </div>
 
-      <el-table v-if="!listLoading || tableShow" :data="tableData" :fit="true" style="width: 100%">
+      <el-table v-if="!listLoading || tableShow" :data="tableData" :fit="true" style="width: 100%"
+                @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="42" :selectable="row => row.status === 0"/>
         <el-table-column :label="$t('applicant')" :min-width="180" fixed="left">
           <template #default="{row}">
             <div class="applicant-cell">
@@ -89,7 +87,7 @@
       />
     </div>
 
-    <el-dialog v-model="rejectShow" :title="$t('auditReject')" width="400px">
+    <el-dialog v-model="rejectShow" :title="rejectTitle" width="400px">
       <el-input v-model="rejectRemark" type="textarea" :rows="3" maxlength="200" show-word-limit
                 :placeholder="$t('rejectRemarkPh')"/>
       <template #footer>
@@ -101,11 +99,11 @@
 </template>
 
 <script setup>
-import {computed, defineOptions, onMounted, onUnmounted, reactive, ref} from "vue";
+import {computed, defineOptions, onMounted, reactive, ref} from "vue";
 import {Icon} from "@iconify/vue";
 import loading from "@/components/loading/index.vue";
 import {useSettingStore} from "@/store/setting.js";
-import {applyApprove, applyBatchReview, applyBatchStatus, applyList, applyReject} from "@/request/apply.js";
+import {applyApprove, applyBatchApprove, applyBatchReject, applyList, applyReject} from "@/request/apply.js";
 import {tzDayjs} from "@/utils/day.js";
 import {useI18n} from "vue-i18n";
 
@@ -135,9 +133,14 @@ const rejectShow = ref(false)
 const rejectRemark = ref('')
 const currentRow = ref(null)
 const auditLoading = ref(false)
-const batchRunning = ref(false)
-const batchProgress = reactive({processed: 0, approved: 0, rejected: 0, kept: 0, remaining: 0})
-let statusTimer = null
+const selectedRows = ref([])
+const rejectIds = ref([])
+const rejectTitle = ref('')
+const rejectMode = ref('single')
+
+function handleSelectionChange(rows) {
+  selectedRows.value = rows
+}
 
 function trustTagType(level) {
   if (level >= 3) return 'success'
@@ -204,19 +207,34 @@ function openApprove(row) {
 }
 
 function openReject(row) {
+  rejectMode.value = 'single'
   currentRow.value = row
   rejectRemark.value = ''
+  rejectTitle.value = t('auditReject')
+  rejectShow.value = true
+}
+
+function openBatchReject() {
+  rejectMode.value = 'batch'
+  rejectIds.value = selectedRows.value.filter(r => r.status === 0).map(r => r.applyId)
+  rejectRemark.value = ''
+  rejectTitle.value = `${t('applyBatchRejectBtn')}(${rejectIds.value.length})`
   rejectShow.value = true
 }
 
 async function submitReject() {
 
-  if (!currentRow.value) return
+  if (rejectMode.value === 'single' && !currentRow.value) return
+  if (rejectMode.value === 'batch' && !rejectIds.value.length) return
 
   auditLoading.value = true
 
   try {
-    await applyReject(currentRow.value.applyId, rejectRemark.value)
+    if (rejectMode.value === 'single') {
+      await applyReject(currentRow.value.applyId, rejectRemark.value)
+    } else {
+      await applyBatchReject(rejectIds.value, rejectRemark.value)
+    }
     rejectShow.value = false
     ElMessage({message: t('setSuccess'), type: 'success', plain: true})
     getList()
@@ -225,103 +243,40 @@ async function submitReject() {
   }
 }
 
-async function batchReview() {
+async function batchApproveSel() {
 
-  if (batchRunning.value) return
+  const ids = selectedRows.value.filter(r => r.status === 0).map(r => r.applyId)
+
+  if (!ids.length) return
 
   try {
-    await ElMessageBox.confirm(t('batchReviewConfirm'), t('applyAudit'), {
+    await ElMessageBox.confirm(t('confirmBatchApproveMsg', {n: ids.length}), t('applyAudit'), {
       confirmButtonText: t('confirm'),
       cancelButtonText: t('cancel'),
-      type: 'warning'
+      type: 'success'
     })
   } catch (e) {
     return
   }
 
-  const data = await applyBatchReview()
-
-  if (!data.queued) {
-    ElMessage({message: t('noApplyFound'), type: 'info', plain: true})
-    return
-  }
-
-  ElMessage({
-    message: t('batchStarted', {queued: data.queued}),
-    type: 'success',
-    plain: true,
-    duration: 5000
-  })
-
-  batchRunning.value = true
-  startBatchPolling()
-}
-
-function startBatchPolling() {
-  stopBatchPolling()
-  statusTimer = setInterval(pollBatchStatus, 3000)
-  pollBatchStatus()
-}
-
-function stopBatchPolling() {
-  if (statusTimer) {
-    clearInterval(statusTimer)
-    statusTimer = null
-  }
-}
-
-async function pollBatchStatus() {
+  auditLoading.value = true
 
   try {
-    const st = await applyBatchStatus()
-
-    if (st.running) {
-      batchRunning.value = true
-      if (st.stats) {
-        batchProgress.processed = st.stats.processed
-        batchProgress.approved = st.stats.approved
-        batchProgress.rejected = st.stats.rejected
-        batchProgress.kept = st.stats.kept
-        batchProgress.remaining = st.stats.remaining
-      }
-    } else {
-      stopBatchPolling()
-      if (batchRunning.value) {
-        batchRunning.value = false
-        ElMessage({
-          message: t('batchDoneSummary', {
-            processed: st.stats?.processed ?? 0,
-            approved: st.stats?.approved ?? 0,
-            rejected: st.stats?.rejected ?? 0,
-            kept: st.stats?.kept ?? 0
-          }),
-          type: 'success',
-          plain: true,
-          duration: 6000
-        })
-        getList()
-      }
-    }
-  } catch (e) {
-    // 轮询失败不打断：下一轮重试
+    const data = await applyBatchApprove(ids)
+    ElMessage({
+      message: t('batchResultMsg', {ok: data.ok, fail: data.failed.length}),
+      type: data.failed.length ? 'warning' : 'success',
+      plain: true,
+      duration: 5000
+    })
+    getList()
+  } finally {
+    auditLoading.value = false
   }
 }
 
-onMounted(async () => {
-  getList()
-  // 进入页面时若后台队列仍在运行，恢复进度显示
-  try {
-    const st = await applyBatchStatus()
-    if (st.running) {
-      batchRunning.value = true
-      startBatchPolling()
-    }
-  } catch (e) {
-    // 忽略：状态获取失败按未运行处理
-  }
-})
+onMounted(getList)
 
-onUnmounted(stopBatchPolling)
 
 </script>
 
