@@ -14,6 +14,7 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,6 +28,7 @@ jobs:
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZHIPU_API_KEY }}
           ANTHROPIC_MODEL: glm-5.3
         with:
+          show_full_output: true
           claude_args: |
             --model glm-5.3 --max-turns 40
           prompt: |
