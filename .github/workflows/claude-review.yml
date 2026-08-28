@@ -14,6 +14,7 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -27,8 +28,9 @@ jobs:
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZHIPU_API_KEY }}
           ANTHROPIC_MODEL: glm-5.3
         with:
+          show_full_output: true
           claude_args: |
-            --model glm-5.3 --max-turns 40
+            --model glm-5.3 --max-turns 80
           prompt: |
             请先读取仓库内的 .claude/skills/code-review-skill/SKILL.md，按该 code-review-skill 的评审流程执行本次 review，需要时查阅其中 reference/ 目录的对应指南（本项目栈：Vue 3 前端 + Cloudflare Workers/Hono/Drizzle/D1 后端，优先参考 vue.md、security-review-guide.md、code-quality-universal.md）。用中文输出评审意见：
             - 重点：安全漏洞（SQL 注入、XSS、密钥泄露、越权）、逻辑错误、边界条件、并发问题
