@@ -58,9 +58,14 @@ const requirePerms = [
 	'/regKey/list',
 	'/regKey/delete',
 	'/regKey/clearNotUse',
-	'/regKey/history'
+	'/regKey/history',
+	'/apply/list',
+	'/apply/approve',
+	'/apply/reject',
+	'/apply/batchApprove',
+	'/apply/batchReject',
+	'/apply/zhipuModels'
 ];
-
 const premKey = {
 	'email:delete': ['/email/delete'],
 	'email:send': ['/email/send'],
@@ -87,6 +92,8 @@ const premKey = {
 	'reg-key:add': ['/regKey/add'],
 	'reg-key:query': ['/regKey/list','/regKey/history'],
 	'reg-key:delete': ['/regKey/delete','/regKey/clearNotUse'],
+	'apply:query': ['/apply/list'],
+	'apply:audit': ['/apply/approve', '/apply/reject', '/apply/batchApprove', '/apply/batchReject', '/apply/zhipuModels'],
 };
 
 app.use('*', async (c, next) => {

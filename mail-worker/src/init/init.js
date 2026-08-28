@@ -32,8 +32,114 @@ const dbInit = {
 		await this.v3_1DB(c);
 		await this.v3_2DB(c);
 		await this.v3_3DB(c);
+		await this.v3_4DB(c);
+		await this.v3_5DB(c);
+		await this.v3_6DB(c);
+		await this.v3_7DB(c);
+		await this.v3_8DB(c);
+		await this.v3_9DB(c);
+		await this.v3_10DB(c);
+		await this.v3_11DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_11DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN apply_intake_open INTEGER NOT NULL DEFAULT 1;`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_10DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_base_url TEXT NOT NULL DEFAULT 'https://open.bigmodel.cn/api/paas/v4';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	// v3_8DB 曾用于存量用户 u 别名补发，别名功能已移除；保留空实现占位维持版本序列
+	async v3_8DB(c) {
+	},
+
+	async v3_9DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_model TEXT NOT NULL DEFAULT 'glm-4.7-flash';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_7DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN zhipu_api_key TEXT NOT NULL DEFAULT '';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_6DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN apply_ai_review INTEGER NOT NULL DEFAULT 0;`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_5DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE apply ADD COLUMN reg_code TEXT NOT NULL DEFAULT '';`),
+				c.env.db.prepare(`ALTER TABLE apply ADD COLUMN reg_role_id INTEGER NOT NULL DEFAULT 0;`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_4DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`CREATE TABLE IF NOT EXISTS apply (
+					apply_id INTEGER PRIMARY KEY AUTOINCREMENT,
+					oauth_user_id TEXT NOT NULL DEFAULT '',
+					platform TEXT NOT NULL DEFAULT '',
+					username TEXT NOT NULL DEFAULT '',
+					name TEXT NOT NULL DEFAULT '',
+					avatar TEXT,
+					trust_level INTEGER,
+					email TEXT NOT NULL DEFAULT '',
+					reason TEXT NOT NULL DEFAULT '',
+					status INTEGER NOT NULL DEFAULT 0,
+					remark TEXT NOT NULL DEFAULT '',
+					admin_id INTEGER NOT NULL DEFAULT 0,
+					create_time TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+					update_time TEXT
+				);`),
+				c.env.db.prepare(`CREATE INDEX IF NOT EXISTS idx_apply_oauth ON apply(oauth_user_id);`),
+				c.env.db.prepare(`CREATE INDEX IF NOT EXISTS idx_apply_status ON apply(status);`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN apply_auto_trust_level INTEGER NOT NULL DEFAULT 3;`),
+				c.env.db.prepare(`
+					INSERT INTO perm (perm_id, name, perm_key, pid, type, sort) VALUES
+					(37,'申请管理',NULL, 0, 1, 5.2),
+					(38,'申请查看','apply:query', 37, 2, 0),
+					(39,'申请审核','apply:audit', 37, 2, 1)`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	async v3_3DB(c) {

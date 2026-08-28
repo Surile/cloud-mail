@@ -63,6 +63,12 @@ export const setting = sqliteTable('setting', {
 	googleClientSecret: text('google_client_secret').default('').notNull(),
 	googleSwitch: integer('google_switch').default(1).notNull(),
 	autoCleanDays: integer('auto_clean_days').default(0).notNull(),
-	autoCleanExclude: text('auto_clean_exclude').default('').notNull()
+	autoCleanExclude: text('auto_clean_exclude').default('').notNull(),
+	applyAutoTrustLevel: integer('apply_auto_trust_level').default(3).notNull(),
+	applyAiReview: integer('apply_ai_review').default(0).notNull(),
+	zhipuApiKey: text('zhipu_api_key').default('').notNull(),
+	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull(),
+	zhipuBaseUrl: text('zhipu_base_url').default('https://open.bigmodel.cn/api/paas/v4').notNull(),
+	applyIntakeOpen: integer('apply_intake_open').default(1).notNull()
 });
 export default setting
