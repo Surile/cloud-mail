@@ -103,6 +103,8 @@ const userService = {
 			await c.env.kv.delete(kvConst.AUTH_INFO + userId)
 			return;
 		}
+		// 软删除模式同样要解除第三方登录绑定，否则该身份永远指向已注销账号：无法再登录、也无法重新注册
+		await oauthService.deleteByUserIds(c, [Number(userId)]);
 		await orm(c).update(user).set({ isDel: isDel.DELETE }).where(eq(user.userId, userId)).run();
 		await c.env.kv.delete(kvConst.AUTH_INFO + userId)
 	},
