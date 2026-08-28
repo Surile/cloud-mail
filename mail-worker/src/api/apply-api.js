@@ -29,16 +29,6 @@ app.put('/apply/reject', async (c) => {
 	return c.json(result.ok());
 });
 
-app.post('/apply/batchReview', async (c) => {
-	const data = await applyService.batchReview(c);
-	return c.json(result.ok(data));
-});
-
-app.get('/apply/batchStatus', async (c) => {
-	const data = await applyService.batchStatus(c);
-	return c.json(result.ok(data));
-});
-
 app.get('/apply/zhipuModels', async (c) => {
 	const settingRow = await applyService.getSettingRow(c);
 	const data = await aiService.listZhipuModels(c, { key: settingRow.zhipuApiKey, baseUrl: settingRow.zhipuBaseUrl });

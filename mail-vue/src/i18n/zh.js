@@ -402,12 +402,6 @@ const zh = {
     zhipuModelDesc: '智谱兜底通道使用的模型，聚焦输入框可从接口密钥拉取可用模型列表，也可以手动输入任意模型 ID。',
     zhipuModelPlaceholder: 'glm-4.7-flash',
     zhipuBaseUrlLabel: '智谱接口地址',
-    zhipuBaseUrlDesc: '默认为开放平台标准地址。GLM Coding Plan 订阅用户请改为 https://open.bigmodel.cn/api/coding/paas/v4 以使用订阅额度。',
-    batchReview: 'AI 批量补审',
-    batchReviewConfirm: '将对待审核申请执行批量补审：注册码 / 达到信任阈值的按免审政策直接开通，其余交由 AI 判定（使用智谱兜底通道）。执行期间请勿关闭页面。',
-    batchRunningMsg: '批量补审进行中：已处理 {processed} 条 · 开通 {approved} · 驳回 {rejected} · 转人工 {kept} · 剩余 {remaining} 条',
-    batchStarted: '已在后台开始处理，共 {queued} 条待审。可以离开本页，处理由服务器继续进行。',
-    batchDoneSummary: '批量补审完成：共处理 {processed} 条，开通 {approved} 条，驳回 {rejected} 条，转人工 {kept} 条',
-    batchDone: '批量补审完成'
+    zhipuBaseUrlDesc: '默认为开放平台标准地址。GLM Coding Plan 订阅用户请改为 https://open.bigmodel.cn/api/coding/paas/v4 以使用订阅额度。'
 }
 export default zh
