@@ -29,6 +29,7 @@ jobs:
           ANTHROPIC_MODEL: glm-5.3
         with:
           show_full_output: true
+          display_report: true
           claude_args: |
             --model glm-5.3 --max-turns 80
           prompt: |
@@ -37,4 +38,5 @@ jobs:
             - 其次：性能问题、与项目现有模式不一致的地方、明显的可维护性问题
             - 每条意见标注严重程度：🔴 必须修 / 🟡 建议修改 / 🟢 可忽略
             - 如果整体没有问题，明确输出"✅ 评审通过"并简述改动内容
-            只输出评审意见，不要修改任何代码。
+            - 评审完成后，使用可用的 GitHub 工具把完整评审意见发布为本 PR 的评论（一条中文评论），不要只留在最终输出里
+            只修改代码相关的意见通过评论传达，不要修改任何代码。
