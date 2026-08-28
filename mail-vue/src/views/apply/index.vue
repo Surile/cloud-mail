@@ -7,8 +7,20 @@
       </div>
       <span class="desc">{{ settingStore.settings.title }}</span>
 
+      <!-- 入口关闭：后台关闭申请时优先展示 -->
+      <template v-if="intakeClosed">
+        <el-result icon="info" :title="$t('applyClosedTitle')">
+          <template #sub-title>
+            <div class="result-sub">
+              <div class="tip">{{ $t('applyClosedDesc') }}</div>
+            </div>
+          </template>
+        </el-result>
+        <el-button class="btn" @click="goLogin">{{ $t('backToLogin') }}</el-button>
+      </template>
+
       <!-- 未登录：引导 OAuth 登录 -->
-      <template v-if="view === 'guide'">
+      <template v-else-if="view === 'guide'">
         <div class="guide-desc">{{ $t('applyGuideDesc') }}</div>
         <el-button v-for="p in oauthProviders" :key="p.key" class="btn" @click="loginAndApply(p.key)">
           <el-avatar v-if="p.iconType === 'image'" :src="p.icon" :size="18" style="margin-right: 10px" />
@@ -102,6 +114,7 @@ const {t} = useI18n()
 const settingStore = useSettingStore()
 
 const view = ref('guide')
+const intakeClosed = computed(() => Number(settingStore.settings.applyIntakeOpen) === 0)
 const loading = ref(false)
 const submitLoading = ref(false)
 const record = ref({})

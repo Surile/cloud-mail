@@ -68,6 +68,7 @@ export const setting = sqliteTable('setting', {
 	applyAiReview: integer('apply_ai_review').default(0).notNull(),
 	zhipuApiKey: text('zhipu_api_key').default('').notNull(),
 	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull(),
-	zhipuBaseUrl: text('zhipu_base_url').default('https://open.bigmodel.cn/api/paas/v4').notNull()
+	zhipuBaseUrl: text('zhipu_base_url').default('https://open.bigmodel.cn/api/paas/v4').notNull(),
+	applyIntakeOpen: integer('apply_intake_open').default(1).notNull()
 });
 export default setting

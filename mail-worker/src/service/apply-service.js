@@ -65,6 +65,13 @@ const applyService = {
 			throw new BizError(t('oauthBound'));
 		}
 
+		const intakeSettingRow = await this.getSettingRow(c);
+
+		// 入口总开关：关闭时拒收新申请（已提交的不受影响）
+		if (!Number(intakeSettingRow.applyIntakeOpen)) {
+			throw new BizError(t('applyEntryClosed'));
+		}
+
 		if (!verifyUtils.isEmail(email)) {
 			throw new BizError(t('notEmail'));
 		}

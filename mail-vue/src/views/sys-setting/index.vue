@@ -759,6 +759,23 @@
             <div class="card-content">
               <div class="setting-item">
                 <div>
+                  <span>{{ $t("applyIntakeOpen") }}</span>
+                  <el-tooltip effect="dark" :content="$t('applyIntakeOpenDesc')">
+                    <Icon class="warning" icon="fe:warning" width="18" height="18"/>
+                  </el-tooltip>
+                </div>
+                <div>
+                  <el-switch
+                    @change="change"
+                    :before-change="beforeChange"
+                    :active-value="1"
+                    :inactive-value="0"
+                    v-model="setting.applyIntakeOpen"
+                  />
+                </div>
+              </div>
+              <div class="setting-item">
+                <div>
                   <span>{{ $t("applyAutoTrustLevel") }}</span>
                   <el-tooltip
                     effect="dark"

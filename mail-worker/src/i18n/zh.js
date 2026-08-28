@@ -75,6 +75,7 @@ const zh = {
 	reasonTooShort: '申请理由至少10个字',
 	applyMinPrefix: '邮箱前缀太短',
 	applyIdentityFail: '登录状态失效，请重新登录后再试',
+	applyEntryClosed: '申请入口已关闭，暂停受理新申请',
 	perms: {
 		"邮件": "邮件",
 		"邮件发送": "邮件发送",
