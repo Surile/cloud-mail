@@ -30,6 +30,24 @@
         </div>
       </div>
     </div>
+    <div class="oauth">
+      <div class="title">{{$t('oauthBindingTitle')}}</div>
+      <div class="oauth-desc">{{$t('oauthBindingDesc')}}</div>
+      <div v-for="b in bindings" :key="b.oauthUserId" class="oauth-row">
+        <el-avatar v-if="providerMeta[b.platform] && providerMeta[b.platform].iconType === 'image'" :src="providerMeta[b.platform].icon" :size="18"/>
+        <Icon v-else-if="providerMeta[b.platform]" :icon="providerMeta[b.platform].icon" width="18" height="18"/>
+        <Icon v-else icon="mdi:link-variant" width="18" height="18"/>
+        <span class="oauth-name">{{ b.username || b.name || b.platform }}</span>
+        <el-button link type="danger" size="small" :disabled="bindings.length <= 1" @click="unbindConfirm(b)">{{$t('oauthUnbindBtn')}}</el-button>
+      </div>
+      <div v-for="p in bindableProviders" :key="p.key" class="oauth-row">
+        <el-avatar v-if="p.iconType === 'image'" :src="p.icon" :size="18"/>
+        <Icon v-else :icon="p.icon" width="18" height="18"/>
+        <span class="oauth-name">{{ p.label }}</span>
+        <el-button link type="primary" size="small" @click="bindProvider(p.key)">{{$t('oauthBindBtn')}}</el-button>
+      </div>
+      <div v-if="!bindings.length && !bindableProviders.length" class="oauth-empty">{{$t('oauthNoneAvailable')}}</div>
+    </div>
     <div class="language">
       <div class="title">{{$t('language')}}</div>
       <el-select
@@ -61,14 +79,16 @@
   </div>
 </template>
 <script setup>
-import {reactive, ref, defineOptions} from 'vue'
-import {resetPassword, userDelete} from "@/request/my.js";
+import {reactive, ref, computed, defineOptions} from 'vue'
+import {resetPassword, userDelete, myOauthBindings, myOauthUnbind} from "@/request/my.js";
 import {useUserStore} from "@/store/user.js";
 import router from "@/router/index.js";
 import {accountSetName} from "@/request/account.js";
 import {useAccountStore} from "@/store/account.js";
 import {useI18n} from "vue-i18n";
 import {useSettingStore} from "@/store/setting.js";
+import {Icon} from "@iconify/vue";
+import {launchOauth} from "@/utils/oauth.js";
 
 const { t } = useI18n()
 const accountStore = useAccountStore()
@@ -78,6 +98,50 @@ const setPwdLoading = ref(false)
 const setNameShow = ref(false)
 const accountName = ref(null)
 const langSelect = ref(settingStore.lang)
+
+// 第三方登录绑定：列表 / 追加绑定（跳 OAuth 回登录页走 bind 分支）/ 解绑（后端保底最后一个不可解）
+const bindings = ref([])
+
+const providerMeta = {
+  linuxdo: {label: 'LinuxDo', icon: '/image/linuxdo.webp', iconType: 'image'},
+  github: {label: 'GitHub', icon: 'codicon:github-inverted', iconType: 'iconify'},
+  google: {label: 'Google', icon: 'devicon:google', iconType: 'iconify'},
+}
+
+const bindableProviders = computed(() => {
+  return Object.keys(providerMeta)
+      .filter(key => settingStore.settings[key + 'Switch'] === 0 && settingStore.settings[key + 'ClientId'])
+      .filter(key => !bindings.value.some(b => b.platform === key))
+      .map(key => ({key, ...providerMeta[key]}))
+})
+
+async function getBindings() {
+  bindings.value = (await myOauthBindings()) || []
+}
+
+function bindProvider(platform) {
+  const clientId = settingStore.settings[platform + 'ClientId']
+  launchOauth(platform, clientId, 'bind')
+}
+
+function unbindConfirm(row) {
+  ElMessageBox.confirm(t('oauthUnbindConfirm'), t('oauthBindingTitle'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
+    type: 'warning'
+  }).then(async () => {
+    await myOauthUnbind(row.oauthUserId)
+    ElMessage({
+      message: t('saveSuccessMsg'),
+      type: 'success',
+      plain: true,
+    })
+    await getBindings()
+  }).catch(() => {
+  })
+}
+
+getBindings()
 
 defineOptions({
   name: 'setting'
@@ -285,6 +349,35 @@ function submitPwd() {
 
     .language-select {
       width: 100px;
+    }
+  }
+
+  .oauth {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+
+    .oauth-desc {
+      color: var(--regular-text-color);
+    }
+
+    .oauth-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+
+      .oauth-name {
+        flex: 1;
+        overflow: hidden;
+        white-space: nowrap;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .oauth-empty {
+      color: var(--regular-text-color);
     }
   }
 

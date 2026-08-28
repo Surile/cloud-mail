@@ -113,35 +113,46 @@
         </div>
       </div>
     </div>
-    <el-dialog class="bind-dialog" v-model="showBindForm"  title="注册邮箱" >
+    <el-dialog class="bind-dialog" v-model="showBindForm" :title="bindMode === 'claim' ? $t('claimAccount') : $t('bindNewEmail')" >
       <div class="bind-container">
-        <el-input :class="!hideLoginDomain ? 'email-input' : ''" v-model="bindForm.email" type="text" :placeholder="$t('emailAccount')" autocomplete="off" @keyup.enter="bind">
-          <template #append v-if="!hideLoginDomain">
-            <div @click.stop="openSelect">
-              <el-select
-                  ref="mySelect"
-                  v-model="suffix"
-                  :placeholder="$t('select')"
-                  class="select"
-              >
-                <el-option
-                    v-for="item in domainList"
-                    :key="item"
-                    :label="item"
-                    :value="item"
-                />
-              </el-select>
-              <div>
-                <span>{{ suffix }}</span>
-                <Icon class="setting-icon" icon="mingcute:down-small-fill" width="20" height="20"/>
+        <el-radio-group v-if="settingStore.settings.register === 1" v-model="bindMode" style="margin-bottom: 14px">
+          <el-radio-button value="register">{{$t('bindNewEmail')}}</el-radio-button>
+          <el-radio-button value="claim">{{$t('claimAccount')}}</el-radio-button>
+        </el-radio-group>
+        <template v-if="bindMode === 'register'">
+          <el-input :class="!hideLoginDomain ? 'email-input' : ''" v-model="bindForm.email" type="text" :placeholder="$t('emailAccount')" autocomplete="off" @keyup.enter="bind">
+            <template #append v-if="!hideLoginDomain">
+              <div @click.stop="openSelect">
+                <el-select
+                    ref="mySelect"
+                    v-model="suffix"
+                    :placeholder="$t('select')"
+                    class="select"
+                >
+                  <el-option
+                      v-for="item in domainList"
+                      :key="item"
+                      :label="item"
+                      :value="item"
+                  />
+                </el-select>
+                <div>
+                  <span>{{ suffix }}</span>
+                  <Icon class="setting-icon" icon="mingcute:down-small-fill" width="20" height="20"/>
+                </div>
               </div>
-            </div>
-          </template>
-        </el-input>
-        <el-input v-if="settingStore.settings.regKey === 0" v-model="bindForm.code" :placeholder="$t('regKey')"
-                  type="text" autocomplete="off" @keyup.enter="bind"/>
-        <el-input v-if="settingStore.settings.regKey === 2" v-model="bindForm.code"
-                  :placeholder="$t('regKeyOptional')" type="text" autocomplete="off" @keyup.enter="bind"/>
+            </template>
+          </el-input>
+          <el-input v-if="settingStore.settings.regKey === 0" v-model="bindForm.code" :placeholder="$t('regKey')"
+                    type="text" autocomplete="off" @keyup.enter="bind"/>
+          <el-input v-if="settingStore.settings.regKey === 2" v-model="bindForm.code"
+                    :placeholder="$t('regKeyOptional')" type="text" autocomplete="off" @keyup.enter="bind"/>
+        </template>
+        <template v-else>
+          <el-input v-model="bindForm.claimEmail" type="text" :placeholder="$t('claimEmailPlaceholder')" autocomplete="off" @keyup.enter="bind"/>
+          <el-input v-model="bindForm.claimPassword" type="password" :placeholder="$t('password')" autocomplete="off" @keyup.enter="bind"/>
+          <div class="claim-tip">{{$t('claimAccountTip')}}</div>
+        </template>
         <el-button class="btn" type="primary" @click="bind" :loading="bindLoading"
         >绑定
         </el-button>
@@ -167,10 +178,10 @@ import {useUserStore} from "@/store/user.js";
 import {useUiStore} from "@/store/ui.js";
 import {Icon} from "@iconify/vue";
 import {cvtR2Url} from "@/utils/convert.js";
-import {loginUserInfo} from "@/request/my.js";
+import {loginUserInfo, myOauthBind} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import {useI18n} from "vue-i18n";
-import {oauthBindUser, oauthLinuxDoLogin, oauthGithubLogin, oauthGoogleLogin} from "@/request/ouath.js";
+import {oauthBindUser, oauthClaim, oauthLinuxDoLogin, oauthGithubLogin, oauthGoogleLogin} from "@/request/ouath.js";
 import {launchOauth} from "@/utils/oauth.js";
 
 const {t} = useI18n();
@@ -206,8 +217,13 @@ const oauthProviders = computed(() => {
 const bindForm = reactive({
   email: '',
   oauthUserId: '',
-  code: ''
+  code: '',
+  claimEmail: '',
+  claimPassword: ''
 })
+
+// 绑定弹窗双模式：register=注册新邮箱（原行为），claim=凭邮箱+密码认领既有账号（软着陆，存量账密用户走这里）
+const bindMode = ref('register')
 
 const form = reactive({
   email: '',
@@ -313,6 +329,22 @@ async function oauthGetUser() {
   sessionStorage.removeItem('oauthProvider')
   window.history.replaceState({}, '', window.location.origin + window.location.pathname)
 
+  // 已登录用户的追加绑定：走 /my/oauthBind，不带登录端点的建号/登录副作用
+  if (sessionStorage.getItem('oauthNext') === 'bind') {
+    sessionStorage.removeItem('oauthNext')
+    myOauthBind(provider, code, window.location.origin + '/login').then(() => {
+      ElMessage({
+        message: t('oauthBindSuccess'),
+        type: 'success',
+        plain: true,
+      })
+      router.push('/setting')
+    }).catch(() => {
+      oauthLoading.value = false
+    })
+    return
+  }
+
   loginFns[provider](code, window.location.origin + '/login').then(data => {
 
     bindForm.oauthUserId = data.userInfo.oauthUserId;
@@ -328,10 +360,11 @@ async function oauthGetUser() {
         return;
       }
 
+      bindMode.value = settingStore.settings.register === 1 ? 'register' : 'claim'
       showBindForm.value = true
       oauthLoading.value = false
       ElMessage({
-        message: '请注册绑定一个邮箱',
+        message: settingStore.settings.register === 1 ? '请注册绑定一个邮箱' : '请绑定你的账号',
         type: 'warning',
         duration: 4000,
         plain: true,
@@ -348,6 +381,29 @@ async function oauthGetUser() {
 function bind() {
 
   if (bindLoading.value) return
+
+  // 认领模式：凭已有邮箱+密码把该三方身份绑定到既有账号
+  if (bindMode.value === 'claim') {
+
+    const claimEmail = String(bindForm.claimEmail || '').trim()
+
+    if (!claimEmail || !bindForm.claimPassword) {
+      ElMessage({
+        message: t('emptyEmailMsg'),
+        type: 'error',
+        plain: true,
+      })
+      return
+    }
+
+    bindLoading.value = true
+    oauthClaim({email: claimEmail, password: bindForm.claimPassword, oauthUserId: bindForm.oauthUserId}).then(data => {
+      saveToken(data.token)
+    }).catch(() => {
+      bindLoading.value = false
+    })
+    return
+  }
 
   if (!bindForm.email) {
     ElMessage({
@@ -743,6 +799,11 @@ function submitRegister() {
   display: grid;
   grid-template-columns: 1fr;
   gap: 15px;
+
+  .claim-tip {
+    font-size: 12px;
+    color: var(--el-text-color-secondary);
+  }
 }
 
 .setting-icon {

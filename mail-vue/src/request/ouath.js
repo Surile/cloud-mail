@@ -15,3 +15,7 @@ export function oauthGoogleLogin(code, redirectUri) {
 export function oauthBindUser(form) {
     return http.put('/oauth/bindUser', form)
 }
+
+export function oauthClaim(form) {
+    return http.put('/oauth/claim', form)
+}
