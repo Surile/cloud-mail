@@ -390,7 +390,15 @@ const applyService = {
 
 		const userRow = await userService.selectByEmail(c, applyRow.email);
 
-		await orm(c).update(oauth).set({ userId: userRow.userId }).where(eq(oauth.oauthId, oauthRow.oauthId)).run();
+		// 条件更新：仅当身份仍处于未绑定时才落绑定。若审批期间身份已被并发绑定到其他账号，
+		// 更新未命中时刚建的号是无主孤儿，物理删除并作废申请，绝不覆盖既有绑定
+		const bindRes = await orm(c).update(oauth).set({ userId: userRow.userId })
+			.where(and(eq(oauth.oauthId, oauthRow.oauthId), eq(oauth.userId, 0))).run();
+
+		if (!bindRes?.meta?.changes) {
+			await userService.physicsDelete(c, { userIds: String(userRow.userId) });
+			throw new BizError(t('oauthBound'));
+		}
 
 		await orm(c).update(apply).set({
 			status: applyConst.status.APPROVED,

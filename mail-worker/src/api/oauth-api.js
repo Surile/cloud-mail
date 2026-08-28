@@ -21,3 +21,8 @@ app.put('/oauth/bindUser', async (c) => {
 	const loginInfo = await oauthService.bindUser(c, await c.req.json());
 	return c.json(result.ok(loginInfo))
 })
+
+app.put('/oauth/claim', async (c) => {
+	const loginInfo = await oauthService.claimUser(c, await c.req.json());
+	return c.json(result.ok(loginInfo))
+})

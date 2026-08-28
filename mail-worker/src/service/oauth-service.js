@@ -8,7 +8,7 @@ import loginService from "./login-service";
 import cryptoUtils from "../utils/crypto-utils";
 import settingEntity from "../entity/setting";
 import applyService from "./apply-service";
-import { applyConst } from '../const/entity-const';
+import { applyConst, isDel, userConst } from '../const/entity-const';
 import {t} from '../i18n/i18n';
 
 const oauthService = {
@@ -236,6 +236,52 @@ const oauthService = {
 		}
 
 		return await this.saveUser(c, { ...userInfo, userId });
+	},
+
+	// 方案①认领：未绑定的三方身份凭"已存在邮箱+密码"绑定到既有账号（bindUser 只能注册新邮箱，老账密用户填原地址会撞"已被注册"）
+	async claimUser(c, params) {
+
+		const { email, password, oauthUserId } = params;
+
+		const oauthRow = await this.getById(c, oauthUserId);
+
+		if (!oauthRow) {
+			throw new BizError(t('applyIdentityFail'));
+		}
+
+		if (oauthRow.userId !== 0) {
+			throw new BizError(t('oauthBindOccupied'));
+		}
+
+		const userRow = await userService.selectByEmailIncludeDel(c, email);
+
+		if (!userRow) {
+			throw new BizError(t('notExistUser'));
+		}
+
+		if (userRow.isDel === isDel.DELETE) {
+			throw new BizError(t('isDelUser'));
+		}
+
+		if (userRow.status === userConst.status.BAN) {
+			throw new BizError(t('isBanUser'));
+		}
+
+		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password)) {
+			throw new BizError(t('IncorrectPwd'));
+		}
+
+		// 条件更新：仅当身份仍处于未绑定时才认领成功，防与申请开通/其他绑定并发覆盖
+		const bindRes = await orm(c).update(oauth).set({ userId: userRow.userId })
+			.where(and(eq(oauth.oauthUserId, oauthRow.oauthUserId), eq(oauth.userId, 0))).run();
+
+		if (!bindRes?.meta?.changes) {
+			throw new BizError(t('oauthBindOccupied'));
+		}
+
+		const jwtToken = await loginService.login(c, { email: userRow.email, password: null }, true);
+
+		return { userInfo: oauthRow, token: jwtToken };
 	},
 
 	async listByUserId(c, userId) {
