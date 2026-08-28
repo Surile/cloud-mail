@@ -329,9 +329,12 @@ async function oauthGetUser() {
   sessionStorage.removeItem('oauthProvider')
   window.history.replaceState({}, '', window.location.origin + window.location.pathname)
 
-  // 已登录用户的追加绑定：走 /my/oauthBind，不带登录端点的建号/登录副作用
-  if (sessionStorage.getItem('oauthNext') === 'bind') {
-    sessionStorage.removeItem('oauthNext')
+  // 读到意图立即消费：回调若被守卫/刷新打断，残留的 intent 不得劫持下一次登录
+  const oauthNext = sessionStorage.getItem('oauthNext')
+  sessionStorage.removeItem('oauthNext')
+
+  // 已登录用户的追加绑定：走 /my/oauthBind，不带登录端点的建号/登录副作用；登录态丢失则回落普通登录
+  if (oauthNext === 'bind' && localStorage.getItem('token')) {
     myOauthBind(provider, code, window.location.origin + '/login').then(() => {
       ElMessage({
         message: t('oauthBindSuccess'),
@@ -351,9 +354,8 @@ async function oauthGetUser() {
 
     if (!data.token) {
 
-      // 注册关闭时，未绑定身份一律走申请流程；注册开放则维持原绑定弹窗
-      if (data.applyJwt && (sessionStorage.getItem('oauthNext') === 'apply' || settingStore.settings.register === 1)) {
-        sessionStorage.removeItem('oauthNext')
+      // 仅显式申请意图（申请入口发起）跳申请页；其余未绑定身份进绑定弹窗（注册开放=注册/认领双模式，关闭=认领）
+      if (data.applyJwt && oauthNext === 'apply') {
         sessionStorage.setItem('applyJwt', data.applyJwt)
         sessionStorage.setItem('applyUserInfo', JSON.stringify(data.userInfo))
         router.push('/apply')

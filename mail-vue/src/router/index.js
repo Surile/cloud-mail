@@ -119,6 +119,11 @@ router.beforeEach((to, from, next) => {
     }
 
     if (token && to.path.startsWith('/login')) {
+        // OAuth 回调带 code：已登录用户也可能是"追加绑定"回来，放行让登录页消费回调
+        if (to.query.code) {
+            loadBackground(next)
+            return
+        }
         return next(from.path)
     }
 
