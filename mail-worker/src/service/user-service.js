@@ -21,6 +21,13 @@ import oauthService from "./oauth-service";
 import settingService from './setting-service';
 import starService from './star-service';
 
+// 计数口径与 emailService.selectUserEmailCountList 保持一致（未删除且非保存中）
+function userEmailCountSql(type) {
+	return sql`(SELECT COUNT(*) FROM email e WHERE e.user_id = ${user.userId}
+		AND e.type = ${type} AND e.is_del = ${isDel.NORMAL}
+		AND e.status != ${emailConst.status.SAVING})`;
+}
+
 const userService = {
 
 	async loginUserInfo(c, userId) {
@@ -120,7 +127,7 @@ const userService = {
 
 	async list(c, params) {
 
-		let { num, size, email, timeSort, status } = params;
+		let { num, size, email, timeSort, status, countSort } = params;
 
 		size = Number(size);
 		num = Number(num);
@@ -161,7 +168,13 @@ const userService = {
 			.where(and(...conditions));
 
 
-		if (timeSort) {
+		if (countSort === 'receive_asc' || countSort === 'receive_desc') {
+			query.orderBy(userEmailCountSql(emailConst.type.RECEIVE),
+				countSort.endsWith('asc') ? asc(user.userId) : desc(user.userId));
+		} else if (countSort === 'send_asc' || countSort === 'send_desc') {
+			query.orderBy(userEmailCountSql(emailConst.type.SEND),
+				countSort.endsWith('asc') ? asc(user.userId) : desc(user.userId));
+		} else if (timeSort) {
 			query.orderBy(asc(user.userId));
 		} else {
 			query.orderBy(desc(user.userId));

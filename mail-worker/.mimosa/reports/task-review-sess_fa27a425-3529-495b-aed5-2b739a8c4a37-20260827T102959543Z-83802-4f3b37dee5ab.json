@@ -1,0 +1,302 @@
+{
+  "schema_version": "mimosa-task-review/v2",
+  "run_id": "20260827T102959543Z-83802-4f3b37dee5ab",
+  "run_status": "completed",
+  "errors": [],
+  "coverage": {
+    "schema_version": "mimosa-hook-coverage/v1",
+    "status": "complete",
+    "scope": "hook_observed_diff",
+    "baseline": {
+      "complete": true,
+      "captured_files": 88,
+      "candidate_limit": 5000,
+      "truncated": false,
+      "enumeration_error_count": 0,
+      "snapshot_error_count": 0,
+      "compensated_target_count": 8
+    },
+    "change_tracking": {
+      "touched_observed": 0,
+      "touched_retained": 0,
+      "truncated": false,
+      "bash_mutation": true,
+      "bash_discovered": 8,
+      "bash_discovery_limit": 80,
+      "bash_discovery_truncated": false
+    },
+    "candidates": {
+      "eligible_files": 8,
+      "selected_files": 8,
+      "limit": 20,
+      "truncated": false
+    },
+    "scanning": {
+      "required_files": 8,
+      "scanned_files": 8,
+      "skipped_files": 0,
+      "failed_files": 0,
+      "project_checks_required": 0,
+      "project_checks_completed": 0
+    },
+    "notification": {
+      "eligible_findings": 0,
+      "detailed_findings": 0,
+      "detail_limit": 3,
+      "truncated": false
+    },
+    "reason_counts": {},
+    "reasons": [],
+    "reasons_truncated": false
+  },
+  "generated_at": "2026-08-27T10:29:59.543Z",
+  "session_id": "sess_fa27a425-3529-495b-aed5-2b739a8c4a37",
+  "target": ".",
+  "revision": "be56d44d8145b0f1e21fab9f22f3347851a105c3",
+  "rules_version": "unavailable",
+  "diff_hash": "8f87f03b2b9add1f8a8118955e5e11c31a2e121005a19bdb9b89f966b49deafb",
+  "diff": {
+    "algorithm": "sha256",
+    "changed_file_count": 8,
+    "changed_files": [
+      {
+        "file": "src/entity/apply.js",
+        "ranges": [
+          {
+            "start": 15,
+            "end": 16
+          }
+        ],
+        "before_hash": "23971d87d5e957adbe15130b327c77c4c968a0ece1185053f69341f81f1786f6",
+        "after_hash": "5a9ddaadf9fef1c8aa3e3c029da5e7557a8a8e6763e53ac77ba09846db16bcf5"
+      },
+      {
+        "file": "src/entity/setting.js",
+        "ranges": [
+          {
+            "start": 67,
+            "end": 69
+          }
+        ],
+        "before_hash": "986331e68a88e66db9888e4c3ada49de59d7f07d82d2547fb95fdaecddd3ed41",
+        "after_hash": "3d5cfe1e89de6608e504890390c5ded54fb6fdeba85bfcb0713d1d1b778c5fa0"
+      },
+      {
+        "file": "src/i18n/en.js",
+        "ranges": [
+          {
+            "start": 39,
+            "end": 39
+          },
+          {
+            "start": 76,
+            "end": 76
+          }
+        ],
+        "before_hash": "746af65965c8f9e51cbcbb45c98b5fe3bd551967a3817efeb1b800ec081bf6fa",
+        "after_hash": "bf04179dd0e1bd260eb40c7050720ddb2c6f2b0fc20c3762dfcde8ffa5919393"
+      },
+      {
+        "file": "src/i18n/zh.js",
+        "ranges": [
+          {
+            "start": 39,
+            "end": 39
+          },
+          {
+            "start": 76,
+            "end": 76
+          }
+        ],
+        "before_hash": "b2031cbe457ae1e64fd90c615095b8544a6d823b761fad55856edc8a89ef619b",
+        "after_hash": "6956f3e0c7858348a287e5e8d9634abcde2cbcf1ad8724a4b8f158c738f74cc5"
+      },
+      {
+        "file": "src/init/init.js",
+        "ranges": [
+          {
+            "start": 36,
+            "end": 39
+          },
+          {
+            "start": 44,
+            "end": 124
+          }
+        ],
+        "before_hash": "750c88eabd76ede28a03535d92332910c1fbe536bd110eed04d003af68b08893",
+        "after_hash": "c263cc46ccc5373787d202055ad7dcfb4833d2ebba8ed78c797b13e52a9053b8"
+      },
+      {
+        "file": "src/service/ai-service.js",
+        "ranges": [
+          {
+            "start": 69,
+            "end": 185
+          }
+        ],
+        "before_hash": "065439b05a19215937a4f83a06e533619957a3f346e0b369ac8aec7aaacbc53c",
+        "after_hash": "149583b83bd5258ff96c13c58690fd9e4faac1fd2506901673cc798fe9ede173"
+      },
+      {
+        "file": "src/service/apply-service.js",
+        "ranges": [
+          {
+            "start": 13,
+            "end": 15
+          },
+          {
+            "start": 17,
+            "end": 18
+          },
+          {
+            "start": 110,
+            "end": 118
+          },
+          {
+            "start": 127,
+            "end": 129
+          },
+          {
+            "start": 132,
+            "end": 133
+          },
+          {
+            "start": 135,
+            "end": 136
+          },
+          {
+            "start": 138,
+            "end": 160
+          },
+          {
+            "start": 162,
+            "end": 166
+          },
+          {
+            "start": 169,
+            "end": 181
+          },
+          {
+            "start": 187,
+            "end": 210
+          },
+          {
+            "start": 252,
+            "end": 256
+          },
+          {
+            "start": 263,
+            "end": 267
+          },
+          {
+            "start": 286,
+            "end": 287
+          },
+          {
+            "start": 323,
+            "end": 345
+          },
+          {
+            "start": 350,
+            "end": 351
+          },
+          {
+            "start": 356,
+            "end": 364
+          },
+          {
+            "start": 372,
+            "end": 401
+          },
+          {
+            "start": 426,
+            "end": 426
+          },
+          {
+            "start": 437,
+            "end": 437
+          },
+          {
+            "start": 447,
+            "end": 449
+          },
+          {
+            "start": 451,
+            "end": 451
+          },
+          {
+            "start": 456,
+            "end": 456
+          }
+        ],
+        "before_hash": "a12f9ca22fbe9495052b2673e702a81f2b8c371922326d41974b6d7eabf5f7d9",
+        "after_hash": "e50645cfadd1ad14954c5d786f7b3d1aa8a4e7529d7979940d7fa88646f8dd1f"
+      },
+      {
+        "file": "src/service/user-service.js",
+        "ranges": [
+          {
+            "start": 317,
+            "end": 317
+          },
+          {
+            "start": 345,
+            "end": 345
+          }
+        ],
+        "before_hash": "7fa752f745d18d0726c42005491da4de2516aa498b7ae87561a68db499e09f45",
+        "after_hash": "3674aebbeddce3d2d2f60177d195814cb92fdc67b238609c1051aa04dd99527f"
+      }
+    ]
+  },
+  "timing": {
+    "started_at": "2026-08-27T10:29:58.705Z",
+    "completed_at": "2026-08-27T10:29:59.543Z",
+    "duration_ms": 838,
+    "measurement": "hook_wall_clock"
+  },
+  "tokens": {
+    "input": 0,
+    "output": 0,
+    "total": 0,
+    "model_calls": 0,
+    "measurement": "known-zero"
+  },
+  "telemetry": {
+    "schemaVersion": "mimosa-gate-telemetry/v1",
+    "profile": "gate",
+    "operation": "Stop",
+    "outcome": "complete",
+    "latencyMs": 838,
+    "peakMemoryBytes": 201539584,
+    "memoryMeasurement": "max-observed-process-rss",
+    "scannedFiles": 8,
+    "cache": {
+      "hits": 0,
+      "misses": 0,
+      "measurement": "not-applicable"
+    },
+    "denyCount": 0,
+    "tokens": {
+      "input": 0,
+      "output": 0,
+      "total": 0,
+      "modelCalls": 0,
+      "measurement": "known-zero"
+    }
+  },
+  "finding_count": 0,
+  "rewake_finding_count": 0,
+  "evidence_boundary": {
+    "scan": "candidate",
+    "static_fix_verification": "observed_static_only",
+    "runtime_verification": "not_performed"
+  },
+  "finding_events": [],
+  "findings": [],
+  "artifacts": {
+    "immutable_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37-20260827T102959543Z-83802-4f3b37dee5ab.json",
+    "latest_report": ".mimosa/reports/task-review-sess_fa27a425-3529-495b-aed5-2b739a8c4a37.json",
+    "history_summary": ".mimosa/history/run-20260827T102959543Z-83802-4f3b37dee5ab.json"
+  }
+}
