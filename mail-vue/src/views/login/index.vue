@@ -341,7 +341,7 @@ async function oauthGetUser() {
         type: 'success',
         plain: true,
       })
-      router.push('/setting')
+      router.push('/settings')
     }).catch(() => {
       oauthLoading.value = false
     })
