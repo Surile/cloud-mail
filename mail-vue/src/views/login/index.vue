@@ -108,6 +108,9 @@
           <div class="switch" @click="show = 'login'" v-else>{{ $t('hasAccount') }} <span>{{ $t('loginSwitch') }}</span>
           </div>
         </template>
+        <div class="switch" v-else-if="oauthProviders.length > 0" @click="router.push('/apply')">
+          {{ $t('noAccount') }} <span>{{ $t('applyEntry') }}</span>
+        </div>
       </div>
     </div>
     <el-dialog class="bind-dialog" v-model="showBindForm"  title="注册邮箱" >
@@ -168,6 +171,7 @@ import {loginUserInfo} from "@/request/my.js";
 import {permsToRouter} from "@/perm/perm.js";
 import {useI18n} from "vue-i18n";
 import {oauthBindUser, oauthLinuxDoLogin, oauthGithubLogin, oauthGoogleLogin} from "@/request/ouath.js";
+import {launchOauth} from "@/utils/oauth.js";
 
 const {t} = useI18n();
 const accountStore = useAccountStore();
@@ -287,14 +291,7 @@ const getEmailName = (email) => {
 
 function oauthLogin(provider) {
   const clientId = settingStore.settings[provider + 'ClientId']
-  const redirectUri = encodeURIComponent(window.location.origin + '/login')
-  sessionStorage.setItem('oauthProvider', provider)
-  const authorizeUrls = {
-    linuxdo: `https://connect.linux.do/oauth2/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile+email&state=${provider}`,
-    github: `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}&scope=user:email&state=${provider}`,
-    google: `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=${redirectUri}&response_type=code&scope=openid+profile+email&state=${provider}`,
-  }
-  window.location.href = authorizeUrls[provider]
+  launchOauth(provider, clientId)
 }
 
 const loginFns = {
@@ -321,6 +318,16 @@ async function oauthGetUser() {
     bindForm.oauthUserId = data.userInfo.oauthUserId;
 
     if (!data.token) {
+
+      // 注册关闭时，未绑定身份一律走申请流程；注册开放则维持原绑定弹窗
+      if (data.applyJwt && (sessionStorage.getItem('oauthNext') === 'apply' || settingStore.settings.register === 1)) {
+        sessionStorage.removeItem('oauthNext')
+        sessionStorage.setItem('applyJwt', data.applyJwt)
+        sessionStorage.setItem('applyUserInfo', JSON.stringify(data.userInfo))
+        router.push('/apply')
+        return;
+      }
+
       showBindForm.value = true
       oauthLoading.value = false
       ElMessage({
