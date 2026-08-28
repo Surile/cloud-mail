@@ -21,6 +21,14 @@ export function applyReject(applyId, remark) {
     return http.put('/apply/reject', {applyId, remark})
 }
 
+export function applyBatchApprove(applyIds) {
+    return http.post('/apply/batchApprove', {applyIds})
+}
+
+export function applyBatchReject(applyIds, remark) {
+    return http.post('/apply/batchReject', {applyIds, remark})
+}
+
 export function applyBatchReview() {
     return http.post('/apply/batchReview')
 }

@@ -12,6 +12,12 @@
       </div>
       <Icon class="icon" icon="iconoir:search" width="20" height="20" @click="search"/>
       <Icon class="icon" icon="ion:reload" width="18" height="18" @click="refresh"/>
+      <el-button v-if="selectedRows.length" size="small" type="success" @click="batchApproveSel">
+        {{ $t('applyBatchApproveBtn') }}({{ selectedRows.length }})
+      </el-button>
+      <el-button v-if="selectedRows.length" size="small" type="danger" @click="openBatchReject">
+        {{ $t('applyBatchRejectBtn') }}({{ selectedRows.length }})
+      </el-button>
     </div>
 
     <el-scrollbar class="scrollbar">
@@ -19,7 +25,9 @@
         <loading/>
       </div>
 
-      <el-table v-if="!listLoading || tableShow" :data="tableData" :fit="true" style="width: 100%">
+      <el-table v-if="!listLoading || tableShow" :data="tableData" :fit="true" style="width: 100%"
+                @selection-change="handleSelectionChange">
+        <el-table-column type="selection" width="42" :selectable="row => row.status === 0"/>
         <el-table-column :label="$t('applicant')" :min-width="180" fixed="left">
           <template #default="{row}">
             <div class="applicant-cell">
@@ -79,7 +87,7 @@
       />
     </div>
 
-    <el-dialog v-model="rejectShow" :title="$t('auditReject')" width="400px">
+    <el-dialog v-model="rejectShow" :title="rejectTitle" width="400px">
       <el-input v-model="rejectRemark" type="textarea" :rows="3" maxlength="200" show-word-limit
                 :placeholder="$t('rejectRemarkPh')"/>
       <template #footer>
@@ -95,7 +103,7 @@ import {computed, defineOptions, onMounted, reactive, ref} from "vue";
 import {Icon} from "@iconify/vue";
 import loading from "@/components/loading/index.vue";
 import {useSettingStore} from "@/store/setting.js";
-import {applyApprove, applyList, applyReject} from "@/request/apply.js";
+import {applyApprove, applyBatchApprove, applyBatchReject, applyList, applyReject} from "@/request/apply.js";
 import {tzDayjs} from "@/utils/day.js";
 import {useI18n} from "vue-i18n";
 
@@ -125,6 +133,14 @@ const rejectShow = ref(false)
 const rejectRemark = ref('')
 const currentRow = ref(null)
 const auditLoading = ref(false)
+const selectedRows = ref([])
+const rejectIds = ref([])
+const rejectTitle = ref('')
+const rejectMode = ref('single')
+
+function handleSelectionChange(rows) {
+  selectedRows.value = rows
+}
 
 function trustTagType(level) {
   if (level >= 3) return 'success'
@@ -191,21 +207,68 @@ function openApprove(row) {
 }
 
 function openReject(row) {
+  rejectMode.value = 'single'
   currentRow.value = row
   rejectRemark.value = ''
+  rejectTitle.value = t('auditReject')
+  rejectShow.value = true
+}
+
+function openBatchReject() {
+  rejectMode.value = 'batch'
+  rejectIds.value = selectedRows.value.filter(r => r.status === 0).map(r => r.applyId)
+  rejectRemark.value = ''
+  rejectTitle.value = `${t('applyBatchRejectBtn')}(${rejectIds.value.length})`
   rejectShow.value = true
 }
 
 async function submitReject() {
 
-  if (!currentRow.value) return
+  if (rejectMode.value === 'single' && !currentRow.value) return
+  if (rejectMode.value === 'batch' && !rejectIds.value.length) return
 
   auditLoading.value = true
 
   try {
-    await applyReject(currentRow.value.applyId, rejectRemark.value)
+    if (rejectMode.value === 'single') {
+      await applyReject(currentRow.value.applyId, rejectRemark.value)
+    } else {
+      await applyBatchReject(rejectIds.value, rejectRemark.value)
+    }
     rejectShow.value = false
     ElMessage({message: t('setSuccess'), type: 'success', plain: true})
+    getList()
+  } finally {
+    auditLoading.value = false
+  }
+}
+
+async function batchApproveSel() {
+
+  const ids = selectedRows.value.filter(r => r.status === 0).map(r => r.applyId)
+
+  if (!ids.length) return
+
+  try {
+    await ElMessageBox.confirm(t('confirmBatchApproveMsg', {n: ids.length}), t('applyAudit'), {
+      confirmButtonText: t('confirm'),
+      cancelButtonText: t('cancel'),
+      type: 'success'
+    })
+  } catch (e) {
+    return
+  }
+
+  auditLoading.value = true
+
+  try {
+    const data = await applyBatchApprove(ids)
+    ElMessage({
+      message: t('batchResultMsg', {ok: data.ok, fail: data.failed.length}),
+      type: data.failed.length ? 'warning' : 'success',
+      plain: true,
+      duration: 5000
+    })
     getList()
   } finally {
     auditLoading.value = false

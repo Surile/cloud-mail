@@ -402,7 +402,11 @@ const en = {
     zhipuModelDesc: 'Model used by the Zhipu fallback channel. Focus the select to fetch available models with your key, or type any model ID manually.',
     zhipuModelPlaceholder: 'glm-4.7-flash',
     zhipuBaseUrlLabel: 'Zhipu Endpoint',
-    zhipuBaseUrlDesc: 'Defaults to the standard open platform endpoint. GLM Coding Plan subscribers should set https://open.bigmodel.cn/api/coding/paas/v4 to use their subscription quota.'
+    zhipuBaseUrlDesc: 'Defaults to the standard open platform endpoint. GLM Coding Plan subscribers should set https://open.bigmodel.cn/api/coding/paas/v4 to use their subscription quota.',
+    applyBatchApproveBtn: 'Batch Approve',
+    applyBatchRejectBtn: 'Batch Reject',
+    confirmBatchApproveMsg: 'Approve the selected {n} applications? Mailboxes will be created and bound immediately.',
+    batchResultMsg: 'Done: {ok} succeeded, {fail} failed'
 }
 
 export default en

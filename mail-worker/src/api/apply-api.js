@@ -29,6 +29,16 @@ app.put('/apply/reject', async (c) => {
 	return c.json(result.ok());
 });
 
+app.post('/apply/batchApprove', async (c) => {
+	const data = await applyService.batchApprove(c, await c.req.json(), userContext.getUserId(c));
+	return c.json(result.ok(data));
+});
+
+app.post('/apply/batchReject', async (c) => {
+	const data = await applyService.batchReject(c, await c.req.json(), userContext.getUserId(c));
+	return c.json(result.ok(data));
+});
+
 app.get('/apply/zhipuModels', async (c) => {
 	const settingRow = await applyService.getSettingRow(c);
 	const data = await aiService.listZhipuModels(c, { key: settingRow.zhipuApiKey, baseUrl: settingRow.zhipuBaseUrl });

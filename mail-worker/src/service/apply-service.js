@@ -414,6 +414,55 @@ const applyService = {
 		}).where(eq(apply.applyId, applyRow.applyId)).run();
 	},
 
+	// 批量人工操作：逐条走完整的开通/驳回链路，单条失败不影响其他，返回失败明细
+	async batchApprove(c, params, adminId) {
+		return await this.runBatch(c, params.applyIds, adminId, 'approve', params.remark);
+	},
+
+	async batchReject(c, params, adminId) {
+		return await this.runBatch(c, params.applyIds, adminId, 'reject', params.remark);
+	},
+
+	async runBatch(c, applyIds, adminId, action, remark) {
+
+		const ids = (Array.isArray(applyIds) ? applyIds : []).map(Number).filter(Boolean).slice(0, 100);
+		const okIds = [];
+		const failed = [];
+
+		for (const applyId of ids) {
+
+			try {
+				const applyRow = await orm(c).select().from(apply).where(eq(apply.applyId, applyId)).get();
+
+				if (!applyRow) {
+					throw new BizError(t('applyNotFound'));
+				}
+
+				if (applyRow.status !== applyConst.status.PENDING) {
+					throw new BizError(t('applyProcessed'));
+				}
+
+				if (action === 'approve') {
+					await this.doApprove(c, applyRow, adminId);
+				} else {
+					const clean = String(remark || '').trim().slice(0, 200);
+					await orm(c).update(apply).set({
+						status: applyConst.status.REJECTED,
+						remark: clean,
+						adminId: adminId,
+						updateTime: dayjs().format('YYYY-MM-DD HH:mm:ss')
+					}).where(eq(apply.applyId, applyRow.applyId)).run();
+				}
+
+				okIds.push(applyId);
+			} catch (e) {
+				failed.push({ applyId: applyId, message: e.message });
+			}
+		}
+
+		return { ok: okIds.length, okIds: okIds, failed: failed };
+	},
+
 	async notify(c, applyRow, mode) {
 
 		if (!applyRow) {
