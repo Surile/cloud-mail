@@ -33,6 +33,7 @@
         </div>
         <el-table
             @filter-change="tableFilter"
+            @sort-change="sortChange"
             :empty-text="first ? '' : null"
             :data="users"
             :preserve-expanded-content="preserveExpanded"
@@ -63,10 +64,12 @@
           </el-table-column>
           <el-table-column :formatter="formatterReceive" label-class-name="receive" column-key="receive"
                            :filtered-value="filteredValue" :filters="filters" :width="receiveWidth"
+                           sortable="custom"
                            :label="$t('tabReceived')"
                            prop="receiveEmailCount"/>
           <el-table-column :formatter="formatterSend" label-class-name="send" column-key="send"
                            :filtered-value="filteredValue" :filters="filters" v-if="sendNumShow" :label="$t('tabSent')"
+                           sortable="custom"
                            prop="sendEmailCount"/>
           <el-table-column :formatter="formatterAccount" label-class-name="account" column-key="account"
                            :filtered-value="filteredValue" :filters="filters" v-if="accountNumShow"
@@ -473,7 +476,8 @@ const params = reactive({
   num: 1,
   size: 15,
   timeSort: 0,
-  status: -1
+  status: -1,
+  countSort: ''
 })
 let chooseUser = {}
 const userForm = reactive({
@@ -999,6 +1003,8 @@ function refresh() {
   params.num = 1
   params.status = -1
   params.timeSort = 0
+  params.countSort = ''
+  tableRef.value?.clearSort()
   getUserList();
   roleSelectUse().then(list => {
     roleList.length = 0
@@ -1009,6 +1015,18 @@ function refresh() {
 function changeTimeSort() {
   params.num = 1
   params.timeSort = params.timeSort ? 0 : 1
+  getUserList()
+}
+
+function sortChange({prop, order}) {
+  if (prop === 'receiveEmailCount' && order) {
+    params.countSort = order === 'descending' ? 'receive_desc' : 'receive_asc'
+  } else if (prop === 'sendEmailCount' && order) {
+    params.countSort = order === 'descending' ? 'send_desc' : 'send_asc'
+  } else {
+    params.countSort = ''
+  }
+  params.num = 1
   getUserList()
 }
 
