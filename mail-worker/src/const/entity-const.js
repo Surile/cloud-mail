@@ -120,15 +120,6 @@ export const settingConst = {
 		OPEN: 0,
 		CLOSE: 1,
 	},
-	pushChannel: {
-		BARK: 'bark',
-		SERVERCHAN: 'serverchan',
-		WEBHOOK: 'webhook',
-	},
-	pushConfig: {
-		ENABLE: 0,
-		DISABLE: 1,
-	},
 	ruleType: {
 		ALL: 0,
 		RULE: 1
@@ -157,6 +148,17 @@ export const settingConst = {
 		OPEN: 1,
 		CLOSE: 0
 	}
+}
+
+export const pushChannel = {
+	BARK: 'bark',
+	SERVERCHAN: 'serverchan',
+	WEBHOOK: 'webhook',
+}
+
+export const pushConfig = {
+	ENABLE: 0,
+	DISABLE: 1,
 }
 
 export const verifyRecordType = {
