@@ -28,15 +28,70 @@ jobs:
           ANTHROPIC_AUTH_TOKEN: ${{ secrets.ZHIPU_API_KEY }}
           ANTHROPIC_MODEL: glm-5.3
         with:
-          show_full_output: true
           display_report: true
           claude_args: |
-            --model glm-5.3 --max-turns 80
+            --model glm-5.3 --max-turns 80 --allowedTools "Write"
           prompt: |
             请先读取仓库内的 .claude/skills/code-review-skill/SKILL.md，按该 code-review-skill 的评审流程执行本次 review，需要时查阅其中 reference/ 目录的对应指南（本项目栈：Vue 3 前端 + Cloudflare Workers/Hono/Drizzle/D1 后端，优先参考 vue.md、security-review-guide.md、code-quality-universal.md）。用中文输出评审意见：
             - 重点：安全漏洞（SQL 注入、XSS、密钥泄露、越权）、逻辑错误、边界条件、并发问题
             - 其次：性能问题、与项目现有模式不一致的地方、明显的可维护性问题
             - 每条意见标注严重程度：🔴 必须修 / 🟡 建议修改 / 🟢 可忽略
             - 如果整体没有问题，明确输出"✅ 评审通过"并简述改动内容
-            - 评审完成后，使用可用的 GitHub 工具把完整评审意见发布为本 PR 的评论（一条中文评论），不要只留在最终输出里
-            只修改代码相关的意见通过评论传达，不要修改任何代码。
+            评审完成后，用 Write 工具把评审结论（Markdown）写入仓库根目录的 ai-review-report.md。
+            报告里只要结果：发现的问题逐条列出（含严重程度标注与文件:行号），没有问题则写"✅ 评审通过"及一句话改动简述。
+            不要写评审过程、方法说明、开场白、结尾客套或任何与结论无关的内容。
+            不要调用任何 GitHub 评论/发布相关工具；不要修改任何代码。
+
+      - name: 📮 发布评审评论
+        if: always()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const reportPath = 'ai-review-report.md';
+            const marker = '<!-- ai-review-sticky -->';
+
+            if (!fs.existsSync(reportPath)) {
+              core.setFailed('未找到 ai-review-report.md：Claude 步骤未产出评审报告，请检查上一步日志');
+              return;
+            }
+            const body = fs.readFileSync(reportPath, 'utf8').trim();
+            if (!body) {
+              core.setFailed('ai-review-report.md 内容为空');
+              return;
+            }
+            const prefixed = `${marker}\n${body}`;
+
+            const prNumber = context.issue?.number;
+            if (!prNumber) {
+              core.warning('非 pull_request 触发，跳过 PR 评论，评审全文写入本次运行 Summary');
+              await core.summary.addRaw(body).write();
+              return;
+            }
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+            const sticky = comments.find(
+              (c) => c.user?.type === 'Bot' && (c.body || '').startsWith(marker),
+            );
+            if (sticky) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: sticky.id,
+                body: prefixed,
+              });
+              core.info(`已更新既有评审评论 #${sticky.id}`);
+            } else {
+              const { data: created } = await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: prefixed,
+              });
+              core.info(`已发布评审评论 #${created.id}`);
+            }
