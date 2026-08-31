@@ -24,3 +24,19 @@ export function myOauthUnbind(oauthUserId) {
     return http.delete('/my/oauthUnbind', {params: {oauthUserId}})
 }
 
+export function myPushGet() {
+    return http.get('/my/push/get')
+}
+
+export function myPushSave(params) {
+    return http.post('/my/push/save', params)
+}
+
+export function myPushDelete() {
+    return http.delete('/my/push/delete')
+}
+
+export function myPushTest() {
+    return http.post('/my/push/test')
+}
+

@@ -1,6 +1,7 @@
 import app from '../hono/hono';
 import userService from '../service/user-service';
 import oauthService from '../service/oauth-service';
+import userPushService from '../service/user-push-service';
 import result from '../model/result';
 import userContext from '../security/user-context';
 
@@ -33,5 +34,26 @@ app.delete('/my/oauthUnbind', async (c) => {
 	await oauthService.unbind(c, c.req.query(), userContext.getUserId(c));
 	return c.json(result.ok());
 });
+
+app.get('/my/push/get', async (c) => {
+	const data = await userPushService.get(c, userContext.getUserId(c));
+	return c.json(result.ok(data));
+});
+
+app.post('/my/push/save', async (c) => {
+	await userPushService.save(c, userContext.getUserId(c), await c.req.json());
+	return c.json(result.ok());
+});
+
+app.delete('/my/push/delete', async (c) => {
+	await userPushService.remove(c, userContext.getUserId(c));
+	return c.json(result.ok());
+});
+
+app.post('/my/push/test', async (c) => {
+	await userPushService.sendTest(c, userContext.getUserId(c));
+	return c.json(result.ok());
+});
+
 
 

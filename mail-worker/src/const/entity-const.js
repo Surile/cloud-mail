@@ -116,6 +116,19 @@ export const settingConst = {
 		OPEN: 0,
 		CLOSE: 1,
 	},
+	userPushStatus: {
+		OPEN: 0,
+		CLOSE: 1,
+	},
+	pushChannel: {
+		BARK: 'bark',
+		SERVERCHAN: 'serverchan',
+		WEBHOOK: 'webhook',
+	},
+	pushConfig: {
+		ENABLE: 0,
+		DISABLE: 1,
+	},
 	ruleType: {
 		ALL: 0,
 		RULE: 1

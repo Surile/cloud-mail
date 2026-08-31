@@ -467,6 +467,28 @@
               </div>
               <div class="setting-item">
                 <div>
+                  <span>{{ $t("userPush") }}</span>
+                </div>
+                <div class="forward">
+                  <span>{{
+                    setting.userPushStatus === 0 ? $t("enabled") : $t("disabled")
+                  }}</span>
+                  <el-button
+                    class="opt-button"
+                    size="small"
+                    type="primary"
+                    @click="openUserPushSetting"
+                  >
+                    <Icon
+                      icon="fluent:settings-48-regular"
+                      width="18"
+                      height="18"
+                    />
+                  </el-button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div>
                   <span>{{ $t("forwardingRules") }}</span>
                 </div>
                 <div class="forward">
@@ -1411,6 +1433,35 @@ Authorization: &lt;secret&gt;</pre
           </div>
         </template>
       </el-dialog>
+
+      <el-dialog v-model="userPushShow" class="forward-dialog">
+        <template #header>
+          <div class="forward-head">
+            <span class="forward-set-title">{{ $t("userPush") }}</span>
+          </div>
+        </template>
+        <div class="forward-set-body user-push-desc">
+          {{ $t("userPushDesc") }}
+        </div>
+        <template #footer>
+          <div class="dialog-footer">
+            <el-switch
+              v-model="userPushStatus"
+              :active-value="0"
+              :inactive-value="1"
+              :active-text="$t('enable')"
+              :inactive-text="$t('disable')"
+            />
+            <el-button
+              :loading="settingLoading"
+              type="primary"
+              @click="userPushSave"
+            >
+              {{ $t("save") }}
+            </el-button>
+          </div>
+        </template>
+      </el-dialog>
       <el-dialog v-model="forwardRulesShow" class="forward-dialog">
         <template #header>
           <div class="forward-head">
@@ -1896,6 +1947,7 @@ const forwardRulesShow = ref(false);
 const emailPrefixShow = ref(false);
 const showResendList = ref(false);
 const webhookShow = ref(false);
+const userPushShow = ref(false);
 const settingStore = useSettingStore();
 const uiStore = useUiStore();
 const { settings: setting } = storeToRefs(settingStore);
@@ -2009,6 +2061,7 @@ const forwardEmail = ref([]);
 const forwardStatus = ref(0);
 const webhookUrl = ref("");
 const webhookStatus = ref(1);
+const userPushStatus = ref(1);
 const webhookRetry = ref(0);
 const webhookSecret = ref("");
 const webhookFormatShow = ref(false);
@@ -2232,6 +2285,17 @@ function openWebhookSetting() {
   webhookRetry.value = setting.value.webhookRetry ?? 0;
   webhookSecret.value = setting.value.webhookSecret || "";
   webhookShow.value = true;
+}
+
+function openUserPushSetting() {
+  userPushStatus.value = setting.value.userPushStatus ?? 1;
+  userPushShow.value = true;
+}
+
+function userPushSave() {
+  editSetting({
+    userPushStatus: userPushStatus.value,
+  });
 }
 
 function openEmailPrefix() {
@@ -2796,6 +2860,7 @@ function editSetting(settingForm, refreshStatus = true) {
       tgSettingShow.value = false;
       thirdEmailShow.value = false;
       webhookShow.value = false;
+      userPushShow.value = false;
       forwardRulesShow.value = false;
       addVerifyCountShow.value = false;
       regVerifyCountShow.value = false;
@@ -3184,6 +3249,12 @@ function editSetting(settingForm, refreshStatus = true) {
     border-radius: 4px;
     background: var(--el-fill-color-light);
   }
+}
+
+.user-push-desc {
+  color: var(--regular-text-color);
+  line-height: 1.6;
+  margin-bottom: 15px;
 }
 
 .forward {
