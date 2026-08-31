@@ -1858,23 +1858,6 @@ import { useUiStore } from "@/store/ui.js";
 import { useUserStore } from "@/store/user.js";
 import { useAccountStore } from "@/store/account.js";
 import { Icon } from "@iconify/vue";
-import { cvtR2Url } from "@/utils/convert.js";
-import { storeToRefs } from "pinia";
-import { debounce } from "lodash-es";
-import { isDomain, isEmail } from "@/utils/verify-utils.js";
-import { computed, defineOptions, nextTick, reactive, ref } from "vue";
-import {
-  deleteBackground,
-  setBackground,
-  setBlackList,
-  settingQuery,
-  settingSet,
-} from "@/request/setting.js";
-import { useSettingStore } from "@/store/setting.js";
-import { useUiStore } from "@/store/ui.js";
-import { useUserStore } from "@/store/user.js";
-import { useAccountStore } from "@/store/account.js";
-import { Icon } from "@iconify/vue";
 import { cvtR2Url, toOssDomain } from "@/utils/convert.js";
 import { storeToRefs } from "pinia";
 import { debounce } from "lodash-es";
