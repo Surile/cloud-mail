@@ -2811,9 +2811,18 @@ function openSmtpForm() {
 
 function saveSmtpConfig() {
   const host = String(smtpForm.host || "").trim();
-  if (!host) {
+  if (!host || !/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(host)) {
     ElMessage({
-      message: t("smtpHostPlaceholder"),
+      message: t("smtpHostInvalid"),
+      type: "error",
+      plain: true,
+    });
+    return;
+  }
+  const port = Number(smtpForm.port);
+  if (!Number.isInteger(port) || port < 1 || port > 65535) {
+    ElMessage({
+      message: t("smtpPortInvalid"),
       type: "error",
       plain: true,
     });
@@ -2821,7 +2830,7 @@ function saveSmtpConfig() {
   }
   const settingForm = {
     smtpHost: host,
-    smtpPort: Number(smtpForm.port) || 587,
+    smtpPort: port,
     smtpSecure: smtpForm.secure ? 1 : 0,
     smtpUsername: String(smtpForm.username || "").trim(),
   };

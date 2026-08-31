@@ -10,6 +10,7 @@ import {t} from '../i18n/i18n'
 import verifyRecordService from './verify-record-service';
 import userContext from '../security/user-context';
 import domainUtils from '../utils/domain-uitls';
+import emailUtils from '../utils/email-utils';
 
 const settingService = {
 
@@ -134,6 +135,17 @@ const settingService = {
 		// 掩码值被原样传回时不清空真实密码
 		if (params.smtpPassword && String(params.smtpPassword).includes('******')) {
 			delete params.smtpPassword;
+		}
+
+		// SMTP 配置保存时即校验，别把错误留到发信用户头上
+		if (params.smtpHost !== undefined) {
+			if (!emailUtils.smtpHostValid(params.smtpHost)) {
+				throw new BizError(t('smtpHostInvalid'));
+			}
+			params.smtpHost = emailUtils.smtpHostValid(params.smtpHost);
+		}
+		if (params.smtpPort !== undefined && (!Number.isInteger(Number(params.smtpPort)) || Number(params.smtpPort) < 1 || Number(params.smtpPort) > 65535)) {
+			throw new BizError(t('smtpPortInvalid'));
 		}
 
 		params.resendTokens = JSON.stringify(resendTokens);

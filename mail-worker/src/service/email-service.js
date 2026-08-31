@@ -331,9 +331,20 @@ const emailService = {
 		const resendToken = resendTokens[domain];
 		const useCloudflareEmail = !!c.env.email;
 
-		//SMTP 状态/凭据直查表（绕开设置缓存里的密码掩码）；0=启用
-		const smtpRow = await orm(c).select({ status: settingEntity.smtpStatus, host: settingEntity.smtpHost }).from(settingEntity).get();
-		const useSmtp = Number(smtpRow?.status) === 0 && !!smtpRow?.host;
+		//仅站外发信才需要探测通道；SMTP 凭据直查表（绕开设置缓存里的密码掩码）并透传复用；0=启用
+		let useSmtp = false;
+		let smtpRow = null;
+		if (!allInternal) {
+			smtpRow = await orm(c).select({
+				status: settingEntity.smtpStatus,
+				host: settingEntity.smtpHost,
+				port: settingEntity.smtpPort,
+				secure: settingEntity.smtpSecure,
+				username: settingEntity.smtpUsername,
+				password: settingEntity.smtpPassword
+			}).from(settingEntity).get();
+			useSmtp = Number(smtpRow?.status) === 0 && !!smtpRow?.host;
+		}
 
 		//如果接收方存在站外邮箱，又没有发信服务
 		if (!useCloudflareEmail && !resendToken && !useSmtp && !allInternal) {
@@ -375,7 +386,10 @@ const emailService = {
 					html,
 					attachments,
 					imageDataList,
-					r2Domain
+					r2Domain,
+					sendType,
+					messageId: emailRow.messageId,
+					smtpRow
 				});
 			} else if (useCloudflareEmail) {
 				sendResult = await this.sendByCloudflareEmail(c, {
@@ -528,37 +542,47 @@ const emailService = {
 	//SMTP 发信（worker-mailer，需 wrangler 开启 nodejs_compat）：启用后优先于 CF 发件与 Resend
 	async sendBySmtp(c, params) {
 
-		const settingRow = await orm(c).select().from(settingEntity).get();
-
-		const host = String(settingRow.smtpHost || '').trim();
-		if (!/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(host) || /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(host)) {
+		const smtpRow = params.smtpRow;
+		const host = emailUtils.smtpHostValid(String(smtpRow.host || '').trim());
+		if (!host) {
 			throw new BizError(t('smtpHostInvalid'));
 		}
 
-		//SMTP 通道不处理 cid 内联图：正文字联图改为 R2 直链，仅真实附件走 SMTP
+		//SMTP 通道不处理 cid 内联图：配了 R2 直链域名则正文图改直链；
+		//未配则退化为普通附件随邮件发出，避免收件人收到全裂图邮件
 		let html = params.html;
-		if (params.imageDataList?.length && params.r2Domain) {
-			html = this.imgReplace(params.html, params.imageDataList.map(item => ({ ...item, contentId: `<${item.contentId}>` })), params.r2Domain);
+		let attachments = params.attachments;
+		if (params.imageDataList?.length) {
+			if (params.r2Domain) {
+				html = this.imgReplace(params.html, params.imageDataList.map(item => ({ ...item, contentId: `<${item.contentId}>` })), params.r2Domain);
+			} else {
+				attachments = [...params.imageDataList, ...attachments];
+			}
 		}
 
-		const attachments = await this.toResendAttachments(params.attachments);
+		const attachmentList = await this.toResendAttachments(attachments);
 
 		try {
 			await WorkerMailer.send({
 				host: host,
-				port: Number(settingRow.smtpPort) || 587,
-				secure: Number(settingRow.smtpSecure) === 1,
-				startTls: Number(settingRow.smtpSecure) !== 1,
-				authType: settingRow.smtpUsername ? ['plain', 'login'] : undefined,
-				credentials: settingRow.smtpUsername ? { username: settingRow.smtpUsername, password: settingRow.smtpPassword } : undefined
+				port: Number(smtpRow.port) || 587,
+				secure: Number(smtpRow.secure) === 1,
+				startTls: Number(smtpRow.secure) !== 1,
+				authType: smtpRow.username ? ['plain', 'login'] : undefined,
+				credentials: smtpRow.username ? { username: smtpRow.username, password: smtpRow.password } : undefined
 			}, {
 				from: { name: params.name || emailUtils.getName(params.accountEmail), email: params.accountEmail },
-				to: { email: params.receiveEmail },
+				to: params.receiveEmail.map(email => ({ email })),
 				subject: params.subject,
 				text: params.text,
 				html: html,
-				attachments: attachments.map(item => ({ filename: item.filename || item.name || 'attachment', content: item.content, mimeType: item.contentType }))
+				headers: (params.sendType === 'reply' && params.messageId) ? {
+					'in-reply-to': params.messageId,
+					'references': params.messageId
+				} : undefined,
+				attachments: attachmentList.map(item => ({ filename: item.filename || item.name || 'attachment', content: item.content, mimeType: item.contentType }))
 			});
+			//SMTP 为同步发送，对端已接受即返回；沿用 SENT 状态，与 CF 通道异步投递完成后标 DELIVERED 的口径不同
 			return { data: null, error: null };
 		} catch (e) {
 			return { data: null, error: { message: e.message } };

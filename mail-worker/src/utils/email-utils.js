@@ -14,6 +14,19 @@ const emailUtils = {
 		return parts.length === 2 ? parts[0] : '';
 	},
 
+	//SMTP 服务器地址校验：仅接受公网域名（排除 IP 字面量/localhost/内网段），返回小写合法域名或空串
+	smtpHostValid(host) {
+		if (typeof host !== 'string') return '';
+		const value = host.trim().toLowerCase();
+		if (!/^([a-z0-9]([a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,}$/.test(value)) {
+			return '';
+		}
+		if (/^(localhost|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/.test(value)) {
+			return '';
+		}
+		return value;
+	},
+
 	getBaseEmail(email) {
 		const parts = email.split('@');
 		if (parts.length !== 2) return '';
