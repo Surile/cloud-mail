@@ -71,6 +71,8 @@ const zh = {
     pushTest: '测试',
     pushDelete: '解除配置',
     pushConfigured: '当前配置',
+    pushCopyCode: '携带验证码',
+    pushCopyCodeTip: '默认关闭。开启后邮件中的验证码会随通知发送到第三方服务，Bark 通知点开即自动复制——验证码将经手该平台',
     pushMissingConfig: '请输入推送配置',
     pushTestOk: '测试消息已发送，请查收',
     pushRemoveConfirm: '确定解除推送配置？解除后将不再收到推送',

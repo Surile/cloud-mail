@@ -72,6 +72,16 @@
             :active-text="$t('enable')"
             :inactive-text="$t('disable')"
         />
+        <el-tooltip effect="dark" :content="$t('pushCopyCodeTip')">
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="font-size: 12px">{{ $t('pushCopyCode') }}</span>
+            <el-switch
+                v-model="pushForm.copyCode"
+                :active-value="1"
+                :inactive-value="0"
+            />
+          </div>
+        </el-tooltip>
         <div class="push-buttons">
           <el-button size="small" :loading="pushTesting" @click="pushTest">{{$t('pushTest')}}</el-button>
           <el-button size="small" type="primary" :loading="pushSaving" @click="pushSave">{{$t('save')}}</el-button>
@@ -178,7 +188,7 @@ function unbindConfirm(row) {
 getBindings()
 
 // 邮件推送通知：渠道配置仅保存凭证，测试按已保存的配置发送
-const pushForm = reactive({ channel: 'bark', secret: '', status: 0 })
+const pushForm = reactive({ channel: 'bark', secret: '', status: 0, copyCode: 0 })
 const pushInfo = ref(null)
 const pushSaving = ref(false)
 const pushTesting = ref(false)
@@ -194,6 +204,7 @@ async function getPush() {
   if (pushInfo.value) {
     pushForm.channel = pushInfo.value.channel
     pushForm.status = pushInfo.value.status
+    pushForm.copyCode = Number(pushInfo.value.copyCode) === 1 ? 1 : 0
   }
 }
 
@@ -201,17 +212,24 @@ function pushSave() {
 
   if (pushSaving.value) return
 
+  // 已配置过且未重填凭证：只提交渠道/状态/验证码开关，后端保留原凭证（切开关不必重填密钥）
+  let payload
   if (!pushForm.secret) {
-    ElMessage({
-      message: t('pushMissingConfig'),
-      type: 'error',
-      plain: true,
-    })
-    return
+    if (!pushInfo.value) {
+      ElMessage({
+        message: t('pushMissingConfig'),
+        type: 'error',
+        plain: true,
+      })
+      return
+    }
+    payload = { channel: pushForm.channel, status: pushForm.status, copyCode: pushForm.copyCode }
+  } else {
+    payload = { channel: pushForm.channel, secret: pushForm.secret, status: pushForm.status, copyCode: pushForm.copyCode }
   }
 
   pushSaving.value = true
-  myPushSave({ channel: pushForm.channel, secret: pushForm.secret, status: pushForm.status }).then(() => {
+  myPushSave(payload).then(() => {
     ElMessage({
       message: t('saveSuccessMsg'),
       type: 'success',

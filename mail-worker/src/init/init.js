@@ -41,6 +41,7 @@ const dbInit = {
 		await this.v3_10DB(c);
 		await this.v3_11DB(c);
 		await this.v3_12DB(c);
+		await this.v3_13DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
 	},
@@ -54,10 +55,21 @@ const dbInit = {
 					channel TEXT DEFAULT '' NOT NULL,
 					secret TEXT DEFAULT '' NOT NULL,
 					status INTEGER DEFAULT 0 NOT NULL,
+					copy_code INTEGER DEFAULT 0 NOT NULL,
 					create_time TEXT DEFAULT CURRENT_TIMESTAMP NOT NULL
 				);`),
 				c.env.db.prepare(`CREATE UNIQUE INDEX IF NOT EXISTS idx_user_push_user ON user_push(user_id);`),
 				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN user_push_status INTEGER NOT NULL DEFAULT 1;`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
+	},
+
+	async v3_13DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE user_push ADD COLUMN copy_code INTEGER NOT NULL DEFAULT 0;`)
 			]);
 		} catch (e) {
 			console.warn(`跳过字段：${e.message}`);

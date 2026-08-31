@@ -71,6 +71,8 @@ const en = {
     pushTest: 'Test',
     pushDelete: 'Remove',
     pushConfigured: 'Configured',
+    pushCopyCode: 'Include verification code',
+    pushCopyCodeTip: 'Off by default. When on, verification codes are sent with the notification to the third-party service (Bark notifications copy to clipboard on open) — the code passes through that platform',
     pushMissingConfig: 'Push configuration is required',
     pushTestOk: 'Test message sent, please check',
     pushRemoveConfirm: 'Remove push configuration? You will stop receiving notifications',
