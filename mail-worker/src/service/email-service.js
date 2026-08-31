@@ -439,7 +439,8 @@ const emailService = {
 		emailData.content = html;
 		emailData.text = text;
 		emailData.accountId = accountId;
-		emailData.status = useCloudflareEmail ? emailConst.status.DELIVERED : emailConst.status.SENT;
+		// 仅实际走了 CF 异步投递通道才标 DELIVERED；SMTP 同步对端已接受、Resend 已交由 API 均标 SENT
+		emailData.status = (useCloudflareEmail && !useSmtp) ? emailConst.status.DELIVERED : emailConst.status.SENT;
 		emailData.type = emailConst.type.SEND;
 		emailData.userId = userId;
 		emailData.resendEmailId = data?.id;
@@ -562,6 +563,10 @@ const emailService = {
 
 		const attachmentList = await this.toResendAttachments(attachments);
 
+		// worker-mailer 不转义头字段：昵称/主题/线程头/附件名里混入 CRLF 可注入任意邮件头，出报文前统一压平
+		const headerSafe = (value) => String(value ?? '').replace(/\r\n|\r|\n/g, ' ').trim();
+		const inReplyTo = (params.sendType === 'reply' && params.messageId) ? headerSafe(params.messageId) : '';
+
 		try {
 			await WorkerMailer.send({
 				host: host,
@@ -571,16 +576,16 @@ const emailService = {
 				authType: smtpRow.username ? ['plain', 'login'] : undefined,
 				credentials: smtpRow.username ? { username: smtpRow.username, password: smtpRow.password } : undefined
 			}, {
-				from: { name: params.name || emailUtils.getName(params.accountEmail), email: params.accountEmail },
+				from: { name: headerSafe(params.name || emailUtils.getName(params.accountEmail)), email: params.accountEmail },
 				to: params.receiveEmail.map(email => ({ email })),
-				subject: params.subject,
+				subject: headerSafe(params.subject),
 				text: params.text,
 				html: html,
-				headers: (params.sendType === 'reply' && params.messageId) ? {
-					'in-reply-to': params.messageId,
-					'references': params.messageId
+				headers: inReplyTo ? {
+					'in-reply-to': inReplyTo,
+					'references': inReplyTo
 				} : undefined,
-				attachments: attachmentList.map(item => ({ filename: item.filename || item.name || 'attachment', content: item.content, mimeType: item.contentType }))
+				attachments: attachmentList.map(item => ({ filename: headerSafe(item.filename || item.name || 'attachment'), content: item.content, mimeType: item.contentType }))
 			});
 			//SMTP 为同步发送，对端已接受即返回；沿用 SENT 状态，与 CF 通道异步投递完成后标 DELIVERED 的口径不同
 			return { data: null, error: null };

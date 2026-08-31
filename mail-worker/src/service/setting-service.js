@@ -137,12 +137,15 @@ const settingService = {
 			delete params.smtpPassword;
 		}
 
-		// SMTP 配置保存时即校验，别把错误留到发信用户头上
-		if (params.smtpHost !== undefined) {
-			if (!emailUtils.smtpHostValid(params.smtpHost)) {
+		// SMTP 配置保存时即校验，别把错误留到发信用户头上。
+		// 注意 host 为空串是合法态（新装实例默认值，设置页开关会整对象提交）——空白跳过校验原样放行，
+		// 启用但无 host 时发信派发侧 smtpRow.host 判空不会走 SMTP 通道
+		if (params.smtpHost !== undefined && String(params.smtpHost).trim() !== '') {
+			const normalized = emailUtils.smtpHostValid(params.smtpHost);
+			if (!normalized) {
 				throw new BizError(t('smtpHostInvalid'));
 			}
-			params.smtpHost = emailUtils.smtpHostValid(params.smtpHost);
+			params.smtpHost = normalized;
 		}
 		if (params.smtpPort !== undefined && (!Number.isInteger(Number(params.smtpPort)) || Number(params.smtpPort) < 1 || Number(params.smtpPort) > 65535)) {
 			throw new BizError(t('smtpPortInvalid'));

@@ -1135,6 +1135,13 @@
               {{ smtpForm.secure ? $t("smtpSecureOn") : $t("smtpSecureOff") }}
             </span>
           </div>
+          <el-alert
+            v-if="!smtpForm.secure && smtpForm.username"
+            type="warning"
+            :title="$t('smtpPlainAuthWarning')"
+            :closable="false"
+            style="margin-bottom: 15px"
+          />
           <el-input
             style="margin-bottom: 15px"
             type="text"
