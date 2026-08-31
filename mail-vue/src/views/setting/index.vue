@@ -48,6 +48,50 @@
       </div>
       <div v-if="!bindings.length && !bindableProviders.length" class="oauth-empty">{{$t('oauthNoneAvailable')}}</div>
     </div>
+    <div class="push" v-if="settingStore.settings.userPushStatus === 0">
+      <div class="title">{{$t('pushNotifyTitle')}}</div>
+      <div class="push-desc">{{$t('pushNotifyDesc')}}</div>
+      <div class="push-form">
+        <el-select v-model="pushForm.channel" class="push-channel" :placeholder="$t('pushChannel')">
+          <el-option label="Bark" value="bark"/>
+          <el-option label="Server酱" value="serverchan"/>
+          <el-option :label="$t('pushChannelWebhook')" value="webhook"/>
+        </el-select>
+        <el-input
+            v-model="pushForm.secret"
+            class="push-secret"
+            :placeholder="pushSecretPlaceholder"
+            show-password
+        />
+      </div>
+      <div class="push-actions">
+        <el-switch
+            v-model="pushForm.status"
+            :active-value="0"
+            :inactive-value="1"
+            :active-text="$t('enable')"
+            :inactive-text="$t('disable')"
+        />
+        <el-tooltip effect="dark" :content="$t('pushCopyCodeTip')">
+          <div style="display: flex; align-items: center; gap: 6px">
+            <span style="font-size: 12px">{{ $t('pushCopyCode') }}</span>
+            <el-switch
+                v-model="pushForm.copyCode"
+                :active-value="1"
+                :inactive-value="0"
+            />
+          </div>
+        </el-tooltip>
+        <div class="push-buttons">
+          <el-button size="small" :loading="pushTesting" @click="pushTest">{{$t('pushTest')}}</el-button>
+          <el-button size="small" type="primary" :loading="pushSaving" @click="pushSave">{{$t('save')}}</el-button>
+          <el-button v-if="pushInfo" size="small" type="danger" plain @click="pushRemove">{{$t('pushDelete')}}</el-button>
+        </div>
+      </div>
+      <div v-if="pushInfo" class="push-current">
+        {{$t('pushConfigured')}}：{{ pushInfo.channel === 'bark' ? 'Bark' : pushInfo.channel === 'serverchan' ? 'Server酱' : 'Webhook' }} · {{ pushInfo.secretMasked }}
+      </div>
+    </div>
     <div class="language">
       <div class="title">{{$t('language')}}</div>
       <el-select
@@ -80,7 +124,7 @@
 </template>
 <script setup>
 import {reactive, ref, computed, defineOptions} from 'vue'
-import {resetPassword, userDelete, myOauthBindings, myOauthUnbind} from "@/request/my.js";
+import {resetPassword, userDelete, myOauthBindings, myOauthUnbind, myPushGet, myPushSave, myPushDelete, myPushTest} from "@/request/my.js";
 import {useUserStore} from "@/store/user.js";
 import router from "@/router/index.js";
 import {accountSetName} from "@/request/account.js";
@@ -142,6 +186,97 @@ function unbindConfirm(row) {
 }
 
 getBindings()
+
+// 邮件推送通知：渠道配置仅保存凭证，测试按已保存的配置发送
+const pushForm = reactive({ channel: 'bark', secret: '', status: 0, copyCode: 0 })
+const pushInfo = ref(null)
+const pushSaving = ref(false)
+const pushTesting = ref(false)
+
+const pushSecretPlaceholder = computed(() => {
+  if (pushForm.channel === 'bark') return t('pushBarkPlaceholder')
+  if (pushForm.channel === 'serverchan') return t('pushServerchanPlaceholder')
+  return t('pushWebhookPlaceholder')
+})
+
+async function getPush() {
+  pushInfo.value = await myPushGet()
+  if (pushInfo.value) {
+    pushForm.channel = pushInfo.value.channel
+    pushForm.status = pushInfo.value.status
+    pushForm.copyCode = Number(pushInfo.value.copyCode) === 1 ? 1 : 0
+  }
+}
+
+function pushSave() {
+
+  if (pushSaving.value) return
+
+  // 已配置过且未重填凭证：只提交渠道/状态/验证码开关，后端保留原凭证（切开关不必重填密钥）
+  let payload
+  if (!pushForm.secret) {
+    if (!pushInfo.value) {
+      ElMessage({
+        message: t('pushMissingConfig'),
+        type: 'error',
+        plain: true,
+      })
+      return
+    }
+    payload = { channel: pushForm.channel, status: pushForm.status, copyCode: pushForm.copyCode }
+  } else {
+    payload = { channel: pushForm.channel, secret: pushForm.secret, status: pushForm.status, copyCode: pushForm.copyCode }
+  }
+
+  pushSaving.value = true
+  myPushSave(payload).then(() => {
+    ElMessage({
+      message: t('saveSuccessMsg'),
+      type: 'success',
+      plain: true,
+    })
+    pushForm.secret = ''
+    getPush()
+  }).finally(() => {
+    pushSaving.value = false
+  })
+}
+
+function pushTest() {
+
+  if (pushTesting.value) return
+
+  pushTesting.value = true
+  myPushTest().then(() => {
+    ElMessage({
+      message: t('pushTestOk'),
+      type: 'success',
+      plain: true,
+    })
+  }).finally(() => {
+    pushTesting.value = false
+  })
+}
+
+function pushRemove() {
+  ElMessageBox.confirm(t('pushRemoveConfirm'), t('pushNotifyTitle'), {
+    confirmButtonText: t('confirm'),
+    cancelButtonText: t('cancel'),
+    type: 'warning'
+  }).then(() => {
+    myPushDelete().then(() => {
+      pushInfo.value = null
+      pushForm.secret = ''
+      ElMessage({
+        message: t('saveSuccessMsg'),
+        type: 'success',
+        plain: true,
+      })
+    })
+  })
+}
+
+getPush()
 
 defineOptions({
   name: 'setting'
@@ -377,6 +512,48 @@ function submitPwd() {
     }
 
     .oauth-empty {
+      color: var(--regular-text-color);
+    }
+  }
+
+  .push {
+    font-size: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 40px;
+
+    .push-desc {
+      color: var(--regular-text-color);
+      margin-top: -10px;
+    }
+
+    .push-form {
+      display: flex;
+      gap: 10px;
+
+      .push-channel {
+        width: 150px;
+        flex-shrink: 0;
+      }
+
+      .push-secret {
+        flex: 1;
+      }
+    }
+
+    .push-actions {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+
+      .push-buttons {
+        display: flex;
+        gap: 10px;
+      }
+    }
+
+    .push-current {
       color: var(--regular-text-color);
     }
   }

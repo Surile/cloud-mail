@@ -12,6 +12,7 @@ import userService from '../service/user-service';
 import telegramService from '../service/telegram-service';
 import aiService from '../service/ai-service';
 import webhookService from '../service/webhook-service';
+import userPushService from '../service/user-push-service';
 
 export async function email(message, env, ctx) {
 
@@ -195,6 +196,9 @@ export async function email(message, env, ctx) {
 		if (webhookStatus === settingConst.webhookStatus.OPEN && webhookUrl) {
 			await webhookService.sendEmail({ env }, emailRow, webhookUrl, webhookRetry, webhookSecret);
 		}
+
+		//推送到收件人自己配置的渠道
+		await userPushService.send({ env }, emailRow);
 
 	} catch (e) {
 		console.error('邮件接收异常: ', e);
