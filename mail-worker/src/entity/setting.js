@@ -69,6 +69,10 @@ export const setting = sqliteTable('setting', {
 	zhipuApiKey: text('zhipu_api_key').default('').notNull(),
 	zhipuModel: text('zhipu_model').default('glm-4.7-flash').notNull(),
 	zhipuBaseUrl: text('zhipu_base_url').default('https://open.bigmodel.cn/api/paas/v4').notNull(),
-	applyIntakeOpen: integer('apply_intake_open').default(1).notNull()
+	applyIntakeOpen: integer('apply_intake_open').default(1).notNull(),
+	webhookUrl: text('webhook_url').default('').notNull(),
+	webhookStatus: integer('webhook_status').default(1).notNull(),
+	webhookRetry: integer('webhook_retry').default(0).notNull(),
+	webhookSecret: text('webhook_secret').default('').notNull()
 });
 export default setting
