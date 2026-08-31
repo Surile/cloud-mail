@@ -40,8 +40,24 @@ const dbInit = {
 		await this.v3_9DB(c);
 		await this.v3_10DB(c);
 		await this.v3_11DB(c);
+		await this.v3_12DB(c);
 		await settingService.refresh(c);
 		return c.text('success');
+	},
+
+	async v3_12DB(c) {
+		try {
+			await c.env.db.batch([
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_status INTEGER NOT NULL DEFAULT 1;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_host TEXT NOT NULL DEFAULT '';`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_port INTEGER NOT NULL DEFAULT 587;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_secure INTEGER NOT NULL DEFAULT 0;`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_username TEXT NOT NULL DEFAULT '';`),
+				c.env.db.prepare(`ALTER TABLE setting ADD COLUMN smtp_password TEXT NOT NULL DEFAULT '';`)
+			]);
+		} catch (e) {
+			console.warn(`跳过字段：${e.message}`);
+		}
 	},
 
 	async v3_11DB(c) {

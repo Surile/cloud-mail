@@ -17,6 +17,7 @@ const en = {
 	noOsSendAtt: 'Cannot send attachments: object storage not configured',
 	disabledSend: 'Email sending feature is disabled',
 	oauthDisabled: 'This OAuth login is not enabled',
+	smtpHostInvalid: 'Invalid SMTP server address (must be a public domain, internal addresses are not allowed)',
 	oauthBindDuplicate: 'This identity is already bound to your account',
 	oauthBindOccupied: 'This identity is already bound to another account',
 	oauthUnbindNotOwned: 'This binding does not exist or does not belong to your account',

@@ -342,6 +342,46 @@
               </div>
               <div class="setting-item">
                 <div>
+                  <span>{{ $t("smtpTitle") }}</span>
+                  <el-tooltip effect="dark" :content="$t('smtpTip')">
+                    <Icon
+                      class="warning"
+                      icon="fe:warning"
+                      width="18"
+                      height="18"
+                    />
+                  </el-tooltip>
+                </div>
+                <div style="display: flex; align-items: center; gap: 8px">
+                  <span
+                    v-if="setting.smtpHost"
+                    style="font-size: 12px; color: var(--el-text-color-secondary)"
+                    >{{ setting.smtpHost }}</span
+                  >
+                  <el-switch
+                    @change="change"
+                    :before-change="beforeChange"
+                    :active-value="0"
+                    :inactive-value="1"
+                    v-model="setting.smtpStatus"
+                  />
+                  <el-button
+                    class="opt-button"
+                    style="margin-top: 0"
+                    @click="openSmtpForm"
+                    size="small"
+                    type="primary"
+                  >
+                    <Icon
+                      icon="fluent:settings-48-regular"
+                      width="18"
+                      height="18"
+                    />
+                  </el-button>
+                </div>
+              </div>
+              <div class="setting-item">
+                <div>
                   <span>{{ $t("blackList") }}</span>
                 </div>
                 <div>
@@ -1066,6 +1106,52 @@
             type="primary"
             :loading="settingLoading"
             @click="saveResendToken"
+            >{{ $t("save") }}</el-button
+          >
+        </form>
+      </el-dialog>
+      <el-dialog
+        v-model="smtpFormShow"
+        :title="$t('smtpTitle')"
+        width="340"
+      >
+        <form @submit.prevent>
+          <el-input
+            style="margin-bottom: 15px"
+            type="text"
+            :placeholder="$t('smtpHostPlaceholder')"
+            v-model="smtpForm.host"
+          />
+          <el-input
+            style="margin-bottom: 15px"
+            type="number"
+            :placeholder="$t('smtpPortPlaceholder')"
+            v-model="smtpForm.port"
+          />
+          <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px">
+            <span>{{ $t("smtpSecure") }}</span>
+            <el-switch v-model="smtpForm.secure" />
+            <span style="font-size: 12px; color: var(--el-text-color-secondary)">
+              {{ smtpForm.secure ? $t("smtpSecureOn") : $t("smtpSecureOff") }}
+            </span>
+          </div>
+          <el-input
+            style="margin-bottom: 15px"
+            type="text"
+            :placeholder="$t('smtpUsername')"
+            v-model="smtpForm.username"
+          />
+          <el-input
+            style="margin-bottom: 15px"
+            type="password"
+            :placeholder="$t('smtpPasswordPlaceholder')"
+            v-model="smtpForm.password"
+            autocomplete="new-password"
+          />
+          <el-button
+            type="primary"
+            :loading="settingLoading"
+            @click="saveSmtpConfig"
             >{{ $t("save") }}</el-button
           >
         </form>
@@ -1924,6 +2010,14 @@ const resendTokenForm = reactive({
   domain: "",
   token: "",
 });
+const smtpFormShow = ref(false);
+const smtpForm = reactive({
+  host: "",
+  port: 587,
+  secure: false,
+  username: "",
+  password: "",
+});
 const turnstileForm = reactive({
   siteKey: "",
   secretKey: "",
@@ -2706,6 +2800,39 @@ function openResendForm() {
   resendTokenFormShow.value = true;
 }
 
+function openSmtpForm() {
+  smtpForm.host = setting.value.smtpHost || "";
+  smtpForm.port = setting.value.smtpPort || 587;
+  smtpForm.secure = Number(setting.value.smtpSecure) === 1;
+  smtpForm.username = setting.value.smtpUsername || "";
+  smtpForm.password = "";
+  smtpFormShow.value = true;
+}
+
+function saveSmtpConfig() {
+  const host = String(smtpForm.host || "").trim();
+  if (!host) {
+    ElMessage({
+      message: t("smtpHostPlaceholder"),
+      type: "error",
+      plain: true,
+    });
+    return;
+  }
+  const settingForm = {
+    smtpHost: host,
+    smtpPort: Number(smtpForm.port) || 587,
+    smtpSecure: smtpForm.secure ? 1 : 0,
+    smtpUsername: String(smtpForm.username || "").trim(),
+  };
+  const pwd = String(smtpForm.password || "");
+  //留空或仍是掩码则不覆盖已存密码
+  if (pwd && !pwd.includes("******")) {
+    settingForm.smtpPassword = pwd;
+  }
+  editSetting(settingForm);
+}
+
 function openBlackListForm() {
   blackFormShow.value = true;
 }
@@ -2728,6 +2855,7 @@ function backupSetting() {
   delete settingForm.resendTokens;
   delete settingForm.siteKey;
   delete settingForm.secretKey;
+  delete settingForm.smtpPassword;
   backup = JSON.stringify(setting.value);
 }
 
@@ -2750,6 +2878,7 @@ function change(e) {
   delete settingForm.s3SecretKey;
   delete settingForm.tgBotToken;
   delete settingForm.zhipuApiKey;
+  delete settingForm.smtpPassword;
   delete settingForm.resendTokens;
   editSetting(settingForm, false);
 }

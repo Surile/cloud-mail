@@ -88,6 +88,7 @@ const settingService = {
 		settingRow.s3SecretKey = settingRow.s3SecretKey ? `${settingRow.s3SecretKey.slice(0, 12)}******` : null;
 		settingRow.tgBotToken = settingRow.tgBotToken ? `${settingRow.tgBotToken.slice(0, 20)}******` : null;
 		settingRow.zhipuApiKey = settingRow.zhipuApiKey ? `${settingRow.zhipuApiKey.slice(0, 6)}******` : null;
+		settingRow.smtpPassword = settingRow.smtpPassword ? `${settingRow.smtpPassword.slice(0, 3)}******` : null;
 		settingRow.hasR2 = !!c.env.r2
 		settingRow.hasCfEmail = !!c.env.email
 
@@ -128,6 +129,11 @@ const settingService = {
 
 		if (params.webhookUrl !== undefined) {
 			params.webhookUrl = domainUtils.toOssDomain(params.webhookUrl) || '';
+		}
+
+		// 掩码值被原样传回时不清空真实密码
+		if (params.smtpPassword && String(params.smtpPassword).includes('******')) {
+			delete params.smtpPassword;
 		}
 
 		params.resendTokens = JSON.stringify(resendTokens);

@@ -17,6 +17,7 @@ const zh = {
 	noOsSendAtt: '对象存储未配置不能发送附件',
 	disabledSend: '邮件发送功能已停用',
 	oauthDisabled: '该 OAuth 登录未启用',
+	smtpHostInvalid: 'SMTP 服务器地址无效（需为合法域名，不支持内网地址）',
 	oauthBindDuplicate: '该身份已绑定当前账号',
 	oauthBindOccupied: '该身份已绑定其他账号',
 	oauthUnbindNotOwned: '该绑定不存在或不属于当前账号',

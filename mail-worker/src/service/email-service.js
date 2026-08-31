@@ -10,6 +10,8 @@ import BizError from '../error/biz-error';
 import emailUtils from '../utils/email-utils';
 import fileUtils from '../utils/file-utils';
 import { Resend } from 'resend';
+import { WorkerMailer } from 'worker-mailer';
+import settingEntity from '../entity/setting';
 import attService from './att-service';
 import { parseHTML } from 'linkedom';
 import userService from './user-service';
@@ -329,8 +331,12 @@ const emailService = {
 		const resendToken = resendTokens[domain];
 		const useCloudflareEmail = !!c.env.email;
 
+		//SMTP 状态/凭据直查表（绕开设置缓存里的密码掩码）；0=启用
+		const smtpRow = await orm(c).select({ status: settingEntity.smtpStatus, host: settingEntity.smtpHost }).from(settingEntity).get();
+		const useSmtp = Number(smtpRow?.status) === 0 && !!smtpRow?.host;
+
 		//如果接收方存在站外邮箱，又没有发信服务
-		if (!useCloudflareEmail && !resendToken && !allInternal) {
+		if (!useCloudflareEmail && !resendToken && !useSmtp && !allInternal) {
 			throw new BizError(t('noSendProvider'));
 		}
 
@@ -356,10 +362,22 @@ const emailService = {
 
 		let sendResult = {};
 
-		//存在站外邮箱时，如果配置了 Cloudflare Email Service 就优先使用，否则使用 Resend
+		//存在站外邮箱时：SMTP 显式启用优先，其次 Cloudflare Email Service，最后 Resend
 		if (!allInternal) {
 
-			if (useCloudflareEmail) {
+			if (useSmtp) {
+				sendResult = await this.sendBySmtp(c, {
+					name,
+					accountEmail: accountRow.email,
+					receiveEmail,
+					subject,
+					text,
+					html,
+					attachments,
+					imageDataList,
+					r2Domain
+				});
+			} else if (useCloudflareEmail) {
 				sendResult = await this.sendByCloudflareEmail(c, {
 					name,
 					accountEmail: accountRow.email,
@@ -505,6 +523,46 @@ const emailService = {
 				id: result.messageId
 			}
 		};
+	},
+
+	//SMTP 发信（worker-mailer，需 wrangler 开启 nodejs_compat）：启用后优先于 CF 发件与 Resend
+	async sendBySmtp(c, params) {
+
+		const settingRow = await orm(c).select().from(settingEntity).get();
+
+		const host = String(settingRow.smtpHost || '').trim();
+		if (!/^([a-zA-Z0-9]([a-zA-Z0-9-]*[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/.test(host) || /^(localhost|127\.|0\.0\.0\.0|10\.|192\.168\.|169\.254\.|172\.(1[6-9]|2\d|3[01])\.)/i.test(host)) {
+			throw new BizError(t('smtpHostInvalid'));
+		}
+
+		//SMTP 通道不处理 cid 内联图：正文字联图改为 R2 直链，仅真实附件走 SMTP
+		let html = params.html;
+		if (params.imageDataList?.length && params.r2Domain) {
+			html = this.imgReplace(params.html, params.imageDataList.map(item => ({ ...item, contentId: `<${item.contentId}>` })), params.r2Domain);
+		}
+
+		const attachments = await this.toResendAttachments(params.attachments);
+
+		try {
+			await WorkerMailer.send({
+				host: host,
+				port: Number(settingRow.smtpPort) || 587,
+				secure: Number(settingRow.smtpSecure) === 1,
+				startTls: Number(settingRow.smtpSecure) !== 1,
+				authType: settingRow.smtpUsername ? ['plain', 'login'] : undefined,
+				credentials: settingRow.smtpUsername ? { username: settingRow.smtpUsername, password: settingRow.smtpPassword } : undefined
+			}, {
+				from: { name: params.name || emailUtils.getName(params.accountEmail), email: params.accountEmail },
+				to: { email: params.receiveEmail },
+				subject: params.subject,
+				text: params.text,
+				html: html,
+				attachments: attachments.map(item => ({ filename: item.filename || item.name || 'attachment', content: item.content, mimeType: item.contentType }))
+			});
+			return { data: null, error: null };
+		} catch (e) {
+			return { data: null, error: { message: e.message } };
+		}
 	},
 
 	async sendByResend(resendToken, params) {
