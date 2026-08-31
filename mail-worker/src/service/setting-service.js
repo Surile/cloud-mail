@@ -10,6 +10,7 @@ import {t} from '../i18n/i18n'
 import verifyRecordService from './verify-record-service';
 import userContext from '../security/user-context';
 import domainUtils from '../utils/domain-uitls';
+import emailUtils from '../utils/email-utils';
 
 const settingService = {
 
@@ -88,6 +89,7 @@ const settingService = {
 		settingRow.s3SecretKey = settingRow.s3SecretKey ? `${settingRow.s3SecretKey.slice(0, 12)}******` : null;
 		settingRow.tgBotToken = settingRow.tgBotToken ? `${settingRow.tgBotToken.slice(0, 20)}******` : null;
 		settingRow.zhipuApiKey = settingRow.zhipuApiKey ? `${settingRow.zhipuApiKey.slice(0, 6)}******` : null;
+		settingRow.smtpPassword = settingRow.smtpPassword ? `${settingRow.smtpPassword.slice(0, 3)}******` : null;
 		settingRow.hasR2 = !!c.env.r2
 		settingRow.hasCfEmail = !!c.env.email
 
@@ -128,6 +130,22 @@ const settingService = {
 
 		if (params.webhookUrl !== undefined) {
 			params.webhookUrl = domainUtils.toOssDomain(params.webhookUrl) || '';
+		}
+
+		// 掩码值被原样传回时不清空真实密码
+		if (params.smtpPassword && String(params.smtpPassword).includes('******')) {
+			delete params.smtpPassword;
+		}
+
+		// SMTP 配置保存时即校验，别把错误留到发信用户头上
+		if (params.smtpHost !== undefined) {
+			if (!emailUtils.smtpHostValid(params.smtpHost)) {
+				throw new BizError(t('smtpHostInvalid'));
+			}
+			params.smtpHost = emailUtils.smtpHostValid(params.smtpHost);
+		}
+		if (params.smtpPort !== undefined && (!Number.isInteger(Number(params.smtpPort)) || Number(params.smtpPort) < 1 || Number(params.smtpPort) > 65535)) {
+			throw new BizError(t('smtpPortInvalid'));
 		}
 
 		params.resendTokens = JSON.stringify(resendTokens);
