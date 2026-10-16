@@ -14,6 +14,7 @@
         <span class="form-desc" v-if="show === 'login'">{{ $t('loginTitle') }}</span>
         <span class="form-desc" v-else>{{ $t('regTitle') }}</span>
         <div v-show="show === 'login'">
+          <template v-if="PASSWORD_LOGIN_ENABLED">
           <el-input :class="!hideLoginDomain ? 'email-input' : ''" v-model="form.email"
                     type="text" :placeholder="$t('emailAccount')" autocomplete="off" @keyup.enter="submit">
             <template #append v-if="!hideLoginDomain">
@@ -44,6 +45,7 @@
           <el-button class="btn" type="primary" @click="submit" :loading="loginLoading"
           >{{ $t('loginBtn') }}
           </el-button>
+          </template>
           <el-button v-for="p in oauthProviders" :key="p.key" class="btn" style="margin-top: 10px" @click="oauthLogin(p.key)">
             <el-avatar v-if="p.iconType === 'image'" :src="p.icon" :size="18" style="margin-right: 10px" />
             <Icon v-else :icon="p.icon" width="18" height="18" style="margin-right: 10px" />
@@ -197,6 +199,9 @@ const showBindForm = ref(false);
 const show = ref('login')
 
 const oauthKeys = ['linuxdo', 'github', 'google']
+
+// 账号密码登录已关闭，仅保留 OAuth（LinuxDo）登录；如需恢复改为 true
+const PASSWORD_LOGIN_ENABLED = false
 
 const oauthProvider = computed(() => {
   const fromState = route.query.state

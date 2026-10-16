@@ -1,5 +1,6 @@
 const en = {
 	IncorrectPwd: 'Incorrect password',
+	pwdLoginDisabled: 'Password login is disabled, please sign in with LinuxDo',
 	addAccountDisabled: 'Add Email Address feature is disabled',
 	regDisabled: 'Sign up is disabled',
 	emptyEmail: 'Email cannot be empty',

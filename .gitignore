@@ -30,3 +30,6 @@ git-tools.js
 .mimosa/
 .zcode/
 
+
+.graphflow/
+graphflow-out/

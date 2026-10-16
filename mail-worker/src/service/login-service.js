@@ -203,7 +203,13 @@ const loginService = {
 
 		const { email, password } = params;
 
-		if ((!email || !password) && !noVerifyPwd) {
+		// 账号密码登录已关闭，仅保留 LinuxDo 等 OAuth 登录（noVerifyPwd=true 为 OAuth 内部登录路径）
+		if (!noVerifyPwd) {
+			throw new BizError(t('pwdLoginDisabled'));
+		}
+
+		// OAuth 内部路径（noVerifyPwd=true）不携带密码，跳过参数与密码校验
+		if (!noVerifyPwd && (!email || !password)) {
 			throw new BizError(t('emailAndPwdEmpty'));
 		}
 
@@ -221,7 +227,7 @@ const loginService = {
 			throw new BizError(t('isBanUser'));
 		}
 
-		if (!await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password) && !noVerifyPwd) {
+		if (!noVerifyPwd && !await cryptoUtils.verifyPassword(password, userRow.salt, userRow.password)) {
 			throw new BizError(t('IncorrectPwd'));
 		}
 
